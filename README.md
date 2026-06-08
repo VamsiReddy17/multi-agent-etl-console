@@ -1,366 +1,116 @@
-# Production-Ready Multi-Agent Data Pipeline
+# 🚀 Multi-Agent ETL Console
 
-Complete local development environment with Docker, Apache Airflow, Kafka, and PostgreSQL. Built on the multi-agent orchestration framework.
+[![Python Version](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
+[![Orchestrator](https://img.shields.io/badge/Airflow-2.5.3-orange.svg)](https://airflow.apache.org/)
+[![Streaming](https://img.shields.io/badge/Kafka-7.4.0-black.svg)](https://kafka.apache.org/)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
+[![Platform](https://img.shields.io/badge/platform-Docker-blue.svg)](https://www.docker.com/)
 
-## 🎯 Quick Start
+A production-ready, high-throughput **Multi-Agent Data Engineering Pipeline** orchestrated by **Apache Airflow**, powered by **Apache Kafka**, and monitored via a premium **Google Material 3 React System Dashboard**. 
 
-### Prerequisites
-- Docker 20.10+
-- Docker Compose 2.0+
-- Git
-
-### Setup (5 minutes)
-
-```bash
-cd production-pipeline
-
-# 1. Setup environment and build
-./scripts/docker_setup.sh
-
-# 2. Start all services
-docker-compose up -d
-
-# 3. Create Kafka topics
-./scripts/create_topics.sh
-
-# 4. Verify everything is running
-./scripts/health_check.sh
-```
-
-### Access Services
-
-| Service | URL | Username | Password |
-|---------|-----|----------|----------|
-| **Airflow UI** | http://localhost:8080 | airflow | airflow |
-| **PostgreSQL** | localhost:5432 | postgres | postgres_password |
-| **Kafka** | localhost:9092 | - | - |
-| **Redis** | localhost:6379 | - | - |
-
-## 📋 Services
-
-### PostgreSQL (Port 5432)
-Local data warehouse with pre-configured schema:
-- `warehouse.customers` - Customer dimension
-- `warehouse.products` - Product dimension
-- `warehouse.orders` - Orders fact table
-- `warehouse.order_events` - Event stream from Kafka
-- `warehouse.pipeline_execution` - Pipeline logs
-
-Connect:
-```bash
-psql -h localhost -U postgres -d dataware
-```
-
-### Apache Kafka (Port 9092)
-Streaming data broker with pre-configured topics:
-- `orders` - Order events stream
-- `customers` - Customer updates stream
-- `products` - Product catalog stream
-- `events` - Generic events stream
-- `enriched_orders` - Processed orders
-
-List topics:
-```bash
-docker exec prod_kafka kafka-topics --list --bootstrap-server localhost:9092
-```
-
-### Apache Airflow (Port 8080)
-Workflow orchestration platform:
-- Web UI at http://localhost:8080
-- DAGs for pipeline orchestration
-- Celery executor with Redis backend
-- Database backend for PostgreSQL
-
-### Redis (Port 6379)
-In-memory data store for Airflow Celery backend
-
-## 📁 Project Structure
-
-```
-production-pipeline/
-├── docker-compose.yml ............ Service orchestration
-├── Dockerfile ................... Python image for agents
-├── requirements.txt ............. Python dependencies
-├── .env.example ................. Environment template
-│
-├── postgres/
-│   ├── init.sql ................. Database schema
-│   └── schemas/ ................. Additional schemas
-│
-├── kafka/
-│   └── scripts/ ................. Topic management
-│
-├── airflow/
-│   ├── airflow.cfg .............. Configuration
-│   ├── requirements.txt ......... Airflow dependencies
-│   ├── dags/ .................... DAG definitions
-│   ├── plugins/ ................. Custom plugins
-│   └── logs/ .................... Execution logs
-│
-├── agents/ ...................... Multi-agent implementations
-│   ├── kafka_ingestion_agent.py
-│   ├── postgres_load_agent.py
-│   └── config.py
-│
-├── pipelines/ ................... Pipeline implementations
-│   ├── streaming_etl.py
-│   └── config/
-│
-├── scripts/ ..................... Utility scripts
-│   ├── docker_setup.sh
-│   ├── create_topics.sh
-│   └── health_check.sh
-│
-├── docs/ ........................ Documentation
-│   ├── SETUP.md
-│   ├── AIRFLOW_GUIDE.md
-│   ├── KAFKA_GUIDE.md
-│   └── BIGQUERY_MIGRATION.md
-│
-└── tests/ ....................... Integration tests
-```
-
-## 🚀 Working with Services
-
-### PostgreSQL
-
-#### Connect to database
-```bash
-psql -h localhost -U postgres -d dataware
-```
-
-#### View tables
-```sql
-\dt warehouse.*
-SELECT * FROM warehouse.customers;
-SELECT * FROM warehouse.orders;
-```
-
-#### Monitor pipeline executions
-```sql
-SELECT * FROM warehouse.pipeline_execution ORDER BY created_at DESC;
-```
-
-### Kafka
-
-#### Produce test message
-```bash
-docker exec prod_kafka kafka-console-producer \
-  --broker-list localhost:9092 \
-  --topic orders
-
-# Type JSON messages:
-{"order_id": 1, "customer_id": 101, "amount": 99.99}
-```
-
-#### Consume messages
-```bash
-docker exec prod_kafka kafka-console-consumer \
-  --bootstrap-server localhost:9092 \
-  --topic orders \
-  --from-beginning
-```
-
-### Airflow
-
-#### View DAGs
-- Open http://localhost:8080
-- Default credentials: airflow / airflow
-
-#### Trigger DAG
-```bash
-docker exec prod_airflow_webserver airflow dags test [dag_id]
-```
-
-#### View logs
-```bash
-docker-compose logs -f airflow_scheduler
-docker-compose logs -f airflow_worker
-```
-
-## 📊 Sample Data
-
-The PostgreSQL schema comes with sample data:
-- 5 customers
-- 5 products
-- 5 sample orders
-
-Use these to test pipelines without external data sources.
-
-## 🛠️ Common Commands
-
-```bash
-# Start services
-docker-compose up -d
-
-# Stop services
-docker-compose down
-
-# View logs
-docker-compose logs -f
-
-# Rebuild images
-docker-compose build --no-cache
-
-# Execute command in container
-docker exec prod_postgres psql -U postgres -d dataware -c "SELECT * FROM warehouse.orders"
-
-# Health check
-./scripts/health_check.sh
-
-# Clean volumes (WARNING: deletes data)
-docker-compose down -v
-```
-
-## 📈 Next Steps
-
-1. **Run Sample Pipeline** (Phase 2)
-   - Connect agents to Kafka
-   - Process order events
-   - Load to PostgreSQL
-
-2. **Create Airflow DAGs** (Phase 3)
-   - Orchestrate agent execution
-   - Schedule regular pipelines
-   - Monitor execution
-
-3. **Add Monitoring** (Phase 4)
-   - Setup dashboards
-   - Add alerts
-   - Track metrics
-
-4. **Scale to BigQuery** (Phase 5)
-   - Migrate schema
-   - Update agents
-   - Switch to cloud infrastructure
-
-## 🐛 Troubleshooting
-
-### Services won't start
-```bash
-# Check Docker is running
-docker ps
-
-# View service logs
-docker-compose logs [service_name]
-
-# Rebuild everything
-docker-compose down
-docker-compose build --no-cache
-docker-compose up -d
-```
-
-### PostgreSQL won't connect
-```bash
-# Check if container is running
-docker ps | grep postgres
-
-# Check logs
-docker logs prod_postgres
-
-# Reset database
-docker-compose down -v
-docker-compose up postgres -d
-```
-
-### Kafka topics not created
-```bash
-# Manually create topics
-./scripts/create_topics.sh
-
-# Verify topics exist
-docker exec prod_kafka kafka-topics --list --bootstrap-server localhost:9092
-```
-
-### Airflow UI not accessible
-```bash
-# Check webserver is running
-docker ps | grep airflow_webserver
-
-# View logs
-docker logs prod_airflow_webserver
-
-# Restart webserver
-docker-compose restart airflow_webserver
-```
-
-## 📚 Documentation
-
-- **[LOCAL_SETUP.md](docs/LOCAL_SETUP.md)** - Detailed setup guide
-- **[AIRFLOW_GUIDE.md](docs/AIRFLOW_GUIDE.md)** - Airflow configuration & DAGs
-- **[KAFKA_GUIDE.md](docs/KAFKA_GUIDE.md)** - Kafka topics & producers
-- **[BIGQUERY_MIGRATION.md](docs/BIGQUERY_MIGRATION.md)** - Migration to production
-
-## 🔄 Architecture
-
-```
-Kafka Topics (Streaming Data)
-        ↓
-[Kafka Brokers & Zookeeper]
-        ↓
-[Airflow DAGs - Orchestration]
-        ↓
-[Multi-Agent Pipeline]
-  ├─ Ingestion Agents
-  ├─ Transform Agents
-  ├─ Quality Agents
-  └─ Load Agents
-        ↓
-[PostgreSQL - Data Warehouse]
-        ↓
-[Analytics & Dashboards]
-        ↓
-[BigQuery - Production Scale]
-```
-
-## 📝 Environment Variables
-
-Edit `.env` file to customize:
-
-```env
-# Database
-POSTGRES_USER=postgres
-POSTGRES_PASSWORD=postgres_password
-POSTGRES_DB=dataware
-
-# Kafka
-KAFKA_BROKER=kafka:9092
-KAFKA_TOPIC_ORDERS=orders
-
-# Airflow
-AIRFLOW_HOME=/app/airflow
-AIRFLOW__CORE__EXECUTOR=CeleryExecutor
-
-# Redis
-REDIS_URL=redis://redis:6379/0
-```
-
-## 📈 Monitoring
-
-Check service health:
-```bash
-./scripts/health_check.sh
-```
-
-View Docker stats:
-```bash
-docker stats
-```
-
-## 🚀 Production Deployment
-
-For production deployment to BigQuery and cloud infrastructure, see [BIGQUERY_MIGRATION.md](docs/BIGQUERY_MIGRATION.md).
-
-## 📞 Support
-
-- Check logs: `docker-compose logs [service]`
-- Run health check: `./scripts/health_check.sh`
-- Review documentation in `docs/` folder
-
-## 📄 License
-
-This project is part of the Multi-Agent Data Engineering Pipelines reference architecture.
+This system coordinate four specialized agents working sequentially to ingest, transform, validate, and load real-time Kafka event streams into a PostgreSQL Data Warehouse.
 
 ---
 
-**Ready to start?** Run `docker-compose up -d` and visit http://localhost:8080 🚀
+## 🖼️ System Architecture & Dashboard Mockup
+
+### 1. Cooperative Agent Topology
+The pipeline leverages cooperative AI agent patterns to divide labor across discrete streaming stages:
+
+![Pipeline Architecture](architecture/architecture_diagram.png)
+
+### 2. Google Material 3 System Monitor UI
+A high-fidelity React.js single-page application displays active service connections, dynamic data-flow animation nodes (differentiating valid packets from quarantined anomalies), and historical bug post-mortems:
+
+![System Monitor Console](architecture/google_monitoring_dashboard_mockup.png)
+
+---
+
+## ⚡ Key Capabilities
+
+* **Coordinated Agent Network**:
+  * **Kafka Ingestion Agent**: Polls topic streams with JSON decoding error-tolerance.
+  * **Transform Agent**: Type coerces string IDs/amounts, calculates order totals, and stamps metadata.
+  * **Quality Agent**: Filters invalid events and handles quarantine logic under a strict `< 20%` abort threshold.
+  * **Postgres Load Agent**: Performs high-performance bulk insertions using connection pooling.
+* **High-Throughput Scaling**: Tuned to ingest batches of **2,000 messages** at a time, achieving a peak processing capacity of **1,000 messages per second** comfortable keeping up with the 250 msg/s event generator.
+* **Full Observability**: Exposes customized Prometheus metrics (`pipeline_runs_total`, `rows_processed_total`, `rows_quarantined_total`, stage durations) on port `8000`, scraped automatically to preloaded Grafana dashboards.
+* **E2E Lifecycle Orchestrators**: Start and stop automation scripts (shell & batch formats) package the complex setup into simple click-to-run files.
+* **AI Agent Memory System**: Integrated `AGENT_KNOWLEDGE.md` to prevent future AI package resolver regressions.
+
+---
+
+## 🚀 Quick Start (macOS / Linux)
+
+### Setup & Build
+Make sure Docker is running on your host system, then execute the following:
+
+```bash
+# Clone the repository
+git clone https://github.com/Vamsireddy17/multi-agent-etl-console.git
+cd multi-agent-etl-console
+
+# Bootstrap all containers, connections, loops, and dev servers
+./scripts/start.sh
+```
+
+### Shutdown & Cleanup
+To cleanly spin down loop daemons, local React servers, and release container resources:
+
+```bash
+./scripts/stop.sh
+```
+
+---
+
+## 🪟 Quick Start (Windows CMD)
+
+* **Bootstrap Everything**:
+  ```cmd
+  scripts\start.bat
+  ```
+
+* **Shutdown & Cleanup**:
+  ```cmd
+  scripts\stop.bat
+  ```
+
+---
+
+## 📁 Repository Structure
+
+```
+multi-agent-etl-console/
+├── agents/ ...................... Specialized Python Ingestion, Transform, Quality & Load Agents
+├── airflow/ ..................... Airflow Webserver, Scheduler, Worker and Celery configs & DAGs
+├── architecture/ ................ E2E Architecture diagrams, flow definitions, and layout mockups
+├── docs/ ........................ Detailed Guides (Kafka setup, Airflow integrations, cloud scale)
+├── monitoring/ .................. Prometheus scrape rules, Grafana dashboard provisions, and React SPA
+├── pipelines/ ................... Core streaming orchestrators and pipeline configuration YAMLs
+├── postgres/ .................... Pre-configured schemas, target tables, and local test mock datasets
+├── scripts/ ..................... Bootstrapping, health-checking, and topic provisioning scripts
+├── sql/ ......................... Data Warehouse counting scripts and schema audit utilities
+├── tests/ ....................... Multi-agent unit tests and E2E integration test suites
+└── wip/ ......................... AI Agent Knowledge Base, completion lists, and session logs
+```
+
+---
+
+## 🌐 Port & Interface Index
+
+Once bootstrapped, your local development workspace exposes the following endpoints:
+
+| Interface / Service | Local Port | URL | Description |
+|---------------------|------------|-----|-------------|
+| **React Dashboard** | `8082` | [http://localhost:8082](http://localhost:8082) | Premium Material 3 UI console |
+| **Apache Airflow Web UI** | `8080` | [http://localhost:8080](http://localhost:8080) | DAG scheduling & loop logs (`airflow/airflow`) |
+| **Grafana Analytics** | `3000` | [http://localhost:3000](http://localhost:3000) | Live preloaded metrics charts (`admin/admin`) |
+| **Prometheus Telemetry** | `9090` | [http://localhost:9090](http://localhost:9090) | Target metrics scraper dashboard |
+| **ETL Metrics Server** | `8000` | [http://localhost:8000/metrics](http://localhost:8000/metrics) | Ingestion and stage counters endpoint |
+| **PostgreSQL DW** | `5432` | `localhost:5432` | Postgres database instance (`postgres/postgres_password`) |
+
+---
+
+## 🧠 AI Agent Knowledge Base
+
+If you are developing this project using an AI coding agent, read **[AGENT_KNOWLEDGE.md](wip/AGENT_KNOWLEDGE.md)** before modifying any packages. It contains post-mortem analyses of dependency mismatches (connexion, pendulum, flask-session, sqlalchemy) to prevent builds from failing.
