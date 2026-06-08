@@ -1,0 +1,16 @@
+pipeline_name: streaming-etl
+pipeline_version: "1.0.0"
+
+kafka:
+  batch_size: 2000
+  poll_timeout_ms: 1000
+  max_empty_polls: 0       # Stop after N consecutive empty polls (0 = run forever)
+
+pipeline:
+  poll_interval_seconds: 2  # Wait between batches when running in loop mode
+  max_retries: 3
+  retry_delay_seconds: 5
+  log_level: INFO
+
+quality:
+  quarantine_threshold: 0.2  # Fail pipeline if >20% records are quarantined

@@ -1,0 +1,235 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:14-alpine
+    container_name: prod_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_password
+      POSTGRES_DB: dataware
+      PGDATA: /var/lib/postgresql/data/pgdata
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - prod_network
+
+  # Zookeeper (required for Kafka)
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.0
+    container_name: prod_zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - prod_network
+
+  # Kafka Broker
+  kafka:
+    image: confluentinc/cp-kafka:7.4.0
+    container_name: prod_kafka
+    depends_on:
+      zookeeper:
+        condition: service_started
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092,PLAINTEXT_HOST://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    ports:
+      - "9092:9092"
+      - "29092:29092"
+    healthcheck:
+      test: kafka-broker-api-versions --bootstrap-server localhost:9092
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - prod_network
+
+  # Redis (for Airflow Celery)
+  redis:
+    image: redis:7-alpine
+    container_name: prod_redis
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - prod_network
+
+  # Airflow Webserver
+  airflow_webserver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: prod_airflow_webserver
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__DAGS_FOLDER: /app/airflow/dags
+      AIRFLOW__CORE__PLUGINS_FOLDER: /app/airflow/plugins
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgres_password@postgres:5432/airflow
+      AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
+      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://postgres:postgres_password@postgres:5432/airflow
+      AIRFLOW_HOME: /app/airflow
+      POSTGRES_HOST: postgres
+      KAFKA_BROKER: kafka:9092
+    volumes:
+      - ./airflow:/app/airflow
+      - ./agents:/app/agents
+      - ./pipelines:/app/pipelines
+      - airflow_logs:/app/airflow/logs
+    ports:
+      - "8080:8080"
+      - "8000:8000"
+    command: bash -c "airflow db upgrade && (airflow users create --username airflow --password airflow --firstname Admin --lastname User --role Admin --email admin@example.com || true) && airflow webserver"
+    networks:
+      - prod_network
+
+  # Airflow Scheduler
+  airflow_scheduler:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: prod_airflow_scheduler
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__DAGS_FOLDER: /app/airflow/dags
+      AIRFLOW__CORE__PLUGINS_FOLDER: /app/airflow/plugins
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgres_password@postgres:5432/airflow
+      AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
+      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://postgres:postgres_password@postgres:5432/airflow
+      AIRFLOW_HOME: /app/airflow
+      POSTGRES_HOST: postgres
+      KAFKA_BROKER: kafka:9092
+    volumes:
+      - ./airflow:/app/airflow
+      - ./agents:/app/agents
+      - ./pipelines:/app/pipelines
+      - airflow_logs:/app/airflow/logs
+    command: airflow scheduler
+    networks:
+      - prod_network
+
+  # Airflow Worker (Celery)
+  airflow_worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: prod_airflow_worker
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      AIRFLOW__CORE__DAGS_FOLDER: /app/airflow/dags
+      AIRFLOW__CORE__PLUGINS_FOLDER: /app/airflow/plugins
+      AIRFLOW__CORE__LOAD_EXAMPLES: "False"
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://postgres:postgres_password@postgres:5432/airflow
+      AIRFLOW__CELERY__BROKER_URL: redis://redis:6379/0
+      AIRFLOW__CELERY__RESULT_BACKEND: db+postgresql://postgres:postgres_password@postgres:5432/airflow
+      AIRFLOW_HOME: /app/airflow
+      POSTGRES_HOST: postgres
+      KAFKA_BROKER: kafka:9092
+    volumes:
+      - ./airflow:/app/airflow
+      - ./agents:/app/agents
+      - ./pipelines:/app/pipelines
+      - airflow_logs:/app/airflow/logs
+    command: airflow celery worker
+    networks:
+      - prod_network
+
+  # Prometheus for scraping metrics
+  prometheus:
+    image: prom/prometheus:v2.45.0
+    container_name: prod_prometheus
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9090:9090"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - prod_network
+
+  # Grafana for dashboards
+  grafana:
+    image: grafana/grafana:9.5.2
+    container_name: prod_grafana
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+    ports:
+      - "3000:3000"
+    depends_on:
+      - prometheus
+    networks:
+      - prod_network
+
+  # Continuous Order Generator
+  order_generator:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: prod_order_generator
+    depends_on:
+      kafka:
+        condition: service_started
+    environment:
+      KAFKA_BROKER: kafka:9092
+    command: python3 /app/scripts/generate_orders.py --rate 250 --bad-rate 0.1
+    volumes:
+      - ./scripts:/app/scripts
+    networks:
+      - prod_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  airflow_logs:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  prod_network:
+    driver: bridge
+
