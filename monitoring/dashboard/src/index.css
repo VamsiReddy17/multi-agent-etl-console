@@ -325,6 +325,7 @@ body {
 /* Workspace Content */
 .fable-workspace {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   padding: 32px;
