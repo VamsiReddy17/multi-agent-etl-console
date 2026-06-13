@@ -6,7 +6,7 @@
 [![Streaming](https://img.shields.io/badge/Kafka-7.4.0-black.svg)](https://kafka.apache.org/)
 [![Database](https://img.shields.io/badge/PostgreSQL-14-blue.svg)](https://www.postgresql.org/)
 
-A production-ready, high-throughput **Multi-Agent Data Engineering Pipeline** orchestrated by **Apache Airflow**, powered by **Apache Kafka**, and monitored via a premium **Google Material 3 React System Dashboard**. 
+A production-ready, high-throughput **Multi-Agent Data Engineering Pipeline** orchestrated by **Apache Airflow**, powered by **Apache Kafka**, and chronicled through a cinematic **Fable Development Dashboard** — a narrative-driven React UI that tells the story of every session, bug, and fix. 
 
 This system coordinates four specialized agents working sequentially to ingest, transform, validate, and load real-time Kafka event streams into a PostgreSQL Data Warehouse.
 
@@ -58,10 +58,10 @@ sequenceDiagram
     deactivate Load
 ```
 
-### 3. Google Material 3 System Monitor UI
-A high-fidelity React.js single-page application displays active service connections, dynamic data-flow animation nodes (differentiating valid packets from quarantined anomalies), and historical bug post-mortems:
+### 3. The Fable — Development Chronicle Dashboard
+A cinematic, narrative-driven React.js single-page application presenting the entire development journey across **7 interactive views**: The Chronicle (session timeline), The Bestiary (bug tracker), The Codex (development narrative), The Forge (live metrics), The Constellation (animated data-flow canvas), The Watchtower (system topology), and The Quarantine (anomaly review hub).
 
-![System Monitor Console](architecture/google_monitoring_dashboard_mockup.png)
+![The Fable Dashboard](architecture/fable_dashboard_mockup.png)
 
 ---
 
@@ -151,7 +151,7 @@ multi-agent-etl-console/
 ├── airflow/ ..................... Airflow Webserver, Scheduler, Worker and Celery configs & DAGs
 ├── architecture/ ................ E2E Architecture diagrams, flow definitions, and layout mockups
 ├── docs/ ........................ Detailed Guides (Kafka setup, Airflow integrations, cloud scale)
-├── monitoring/ .................. Prometheus scrape rules, Grafana dashboard provisions, and React SPA
+├── monitoring/ .................. Prometheus scrape rules, Grafana dashboards, and Fable React Dashboard
 ├── pipelines/ ................... Core streaming orchestrators and pipeline configuration YAMLs
 ├── postgres/ .................... Pre-configured schemas, target tables, and local test mock datasets
 ├── scripts/ ..................... Bootstrapping, health-checking, and topic provisioning scripts
@@ -168,7 +168,7 @@ Once bootstrapped, your local development workspace exposes the following endpoi
 
 | Interface / Service | Local Port | URL | Description |
 |---------------------|------------|-----|-------------|
-| **React Dashboard** | `8082` | [http://localhost:8082](http://localhost:8082) | Premium Material 3 UI console |
+| **Fable Dashboard** | `8082` | [http://localhost:8082](http://localhost:8082) | Cinematic development chronicle UI |
 | **Apache Airflow Web UI** | `8080` | [http://localhost:8080](http://localhost:8080) | DAG scheduling & loop logs (`airflow/airflow`) |
 | **Grafana Analytics** | `3000` | [http://localhost:3000](http://localhost:3000) | Live preloaded metrics charts (`admin/admin`) |
 | **Prometheus Telemetry** | `9090` | [http://localhost:9090](http://localhost:9090) | Target metrics scraper dashboard |
@@ -185,5 +185,6 @@ If you are developing this project using an AI coding agent, read **[AGENT_KNOWL
 
 ## 📜 Community & Support
 
+* Read **[FABLE.md](FABLE.md)** — the complete development narrative chronicle.
 * Check out our **[CONTRIBUTING.md](CONTRIBUTING.md)** guidelines to start submitting code.
 * Refer to our **[SECURITY.md](SECURITY.md)** to report vulnerabilities.
