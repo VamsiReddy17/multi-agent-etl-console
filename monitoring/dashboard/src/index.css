@@ -88,11 +88,12 @@ body {
   color: var(--text-primary);
   line-height: 1.6;
   overflow: hidden;
-  min-height: 100vh;
+  height: 100vh;
 }
 
 #root {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
 }
 
 /* ── 3. Custom Scrollbar ─────────────────────────────────────────────────────── */
@@ -115,8 +116,10 @@ body {
 .fable-app {
   display: grid;
   grid-template-columns: 260px 1fr;
-  min-height: 100vh;
+  height: 100vh;
+  max-height: 100vh;
   background: var(--abyss);
+  overflow: hidden;
 }
 
 /* ── 5. Sidebar Navigation ───────────────────────────────────────────────────── */
@@ -264,6 +267,7 @@ body {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  min-height: 0;
 }
 
 /* Top Bar */
