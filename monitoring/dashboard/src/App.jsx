@@ -1,102 +1,258 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { 
-  Server, 
-  Activity, 
-  Settings, 
-  Terminal, 
-  Database, 
-  CheckCircle, 
-  AlertTriangle, 
-  TrendingUp, 
-  Play, 
-  Square,
-  RefreshCw,
-  Cpu,
-  Layers,
-  Heart,
-  ChevronRight,
-  ShieldCheck,
-  CheckSquare,
-  HelpCircle,
-  Sliders,
-  Pause,
-  Trash2,
-  AlertOctagon,
-  ArrowRight
+  Server, Activity, Terminal, Database, CheckCircle, AlertTriangle, 
+  TrendingUp, RefreshCw, Cpu, Layers, Heart, ShieldCheck, ChevronDown,
+  ChevronRight, BookOpen, Zap, Eye, Clock, Bug, Wrench, Award,
+  Play, Pause, Trash2, Check, Edit3, ArrowRight
 } from 'lucide-react';
 
-// List of project component objects and details
+// ═══════════════════════════════════════════════════════════════════════════════
+//  DATA: Sessions (The Chronicle)
+// ═══════════════════════════════════════════════════════════════════════════════
+const SESSIONS = [
+  {
+    id: 1, date: '2026-05-20', 
+    title: 'Genesis — The Architecture Takes Shape',
+    goal: 'Review workspace, build full production pipeline from scratch',
+    summary: 'From an empty scaffold, 26 files were forged — 4 specialized agents, a streaming orchestrator, 2 Airflow DAGs, 5 test suites, and a complete architecture documentation library. The multi-agent cooperative pattern was established.',
+    activities: [
+      'Reviewed reference multi-agent pipeline architecture',
+      'Built 4 specialized agents: Kafka Ingestion, Transform, Quality, Postgres Load',
+      'Created streaming ETL orchestrator with single-run and loop modes',
+      'Designed 2 Airflow DAGs for streaming and batch processing',
+      'Wrote 5 test files covering unit and integration tests',
+      'Generated architecture diagrams and comprehensive documentation'
+    ],
+    issues: [],
+    fixes: [],
+    tags: ['feature', 'feature', 'feature'],
+    filesCreated: 26, testsPassing: 0, rowsLoaded: 0
+  },
+  {
+    id: 2, date: '2026-05-20',
+    title: 'Trial by Fire — The Dependency Wars',
+    goal: 'Start Docker services, run pytest, resolve library version conflicts',
+    summary: 'Six critical dependency conflicts were discovered and conquered. Connexion v3, Pendulum v3, Flask-Session, and SQLAlchemy all waged war against Airflow 2.5.3. Every battle was won through version pinning and methodical debugging.',
+    activities: [
+      'Started Docker Compose stack with 7 base containers',
+      'Diagnosed 6 critical dependency conflicts in Airflow ecosystem',
+      'Locked all sub-dependencies to compatible versions',
+      'Created Airflow admin user and verified login',
+      'Achieved 31 passing tests in 0.12s'
+    ],
+    issues: [
+      'Connexion v3 removed skip_error_handlers parameter',
+      'Pendulum v3 broke timezone module callable',
+      'Flask-Session v0.8 refactored internal modules',
+      'SQLAlchemy v2.0 fundamentally incompatible with Airflow 2.5.3',
+      'Missing celery/redis in root requirements.txt',
+      'Kafka provider package version not found on PyPI'
+    ],
+    fixes: [
+      'Locked connexion[swagger]==2.14.2',
+      'Forced pendulum==2.1.2',
+      'Pinned flask-session==0.4.0',
+      'Downgraded sqlalchemy==1.4.40',
+      'Added celery, redis, and provider packages',
+      'Updated kafka provider to 1.0.0'
+    ],
+    tags: ['bug', 'fix', 'fix', 'fix'],
+    filesCreated: 0, testsPassing: 31, rowsLoaded: 0
+  },
+  {
+    id: 3, date: '2026-05-21',
+    title: 'The All-Seeing Eye — Observability Awakens',
+    goal: 'Implement Prometheus & Grafana observability and instrument ETL metrics',
+    summary: 'The pipeline gained sight. Prometheus began scraping 5 custom metrics, Grafana dashboards auto-provisioned with throughput visualizations, and the Quality Agent\'s quarantine threshold bug was tamed with smarter test parameters.',
+    activities: [
+      'Added Prometheus and Grafana containers to docker-compose',
+      'Created auto-provisioning datasource and dashboard configs',
+      'Built pipeline_dashboard.json with throughput and latency panels',
+      'Instrumented streaming_etl.py with 5 Prometheus metrics',
+      'Wrote test_metrics.py asserting correct telemetry values'
+    ],
+    issues: ['Quality test quarantine rate exceeded 20% threshold with small mock batches'],
+    fixes: ['Adjusted test batch: 5 valid + 1 quarantined = 16.7% rate (under 20% limit)'],
+    tags: ['feature', 'fix'],
+    filesCreated: 4, testsPassing: 33, rowsLoaded: 0
+  },
+  {
+    id: 4, date: '2026-05-21',
+    title: 'The Infinite Loop — Metrics Go Live',
+    goal: 'Verify metrics scraping, fix loop termination, and finalize integration',
+    summary: 'The streaming pipeline achieved perpetual motion. The max_empty_polls bug that killed the daemon after 10 loops was discovered and eliminated. Prometheus confirmed target UP, Grafana rendered live dashboards, and the metrics endpoint blazed on port 8000.',
+    activities: [
+      'Verified all 9 containers running and healthy',
+      'Fixed pipeline loop termination after 10 empty polls',
+      'Started streaming loop daemon in background',
+      'Confirmed Prometheus target UP and Grafana dashboard loaded',
+      'Verified metrics endpoint active at localhost:8000'
+    ],
+    issues: ['Pipeline daemon terminated after 10 consecutive empty polls'],
+    fixes: ['Set max_empty_polls to 0 (infinite) in pipeline_config.yaml'],
+    tags: ['fix', 'perf'],
+    filesCreated: 0, testsPassing: 33, rowsLoaded: 0
+  },
+  {
+    id: 5, date: '2026-05-21',
+    title: 'The Great Flood — Data Pours In',
+    goal: 'Build continuous Kafka generator and verify full end-to-end pipeline',
+    summary: 'The floodgates opened. A continuous order generator began producing 250 events/second. The AttributeError in generate_orders.py was slain, and the pipeline proved itself — ingesting, transforming, validating, and loading data at scale. 81+ rows accumulated and Prometheus counters climbed steadily.',
+    activities: [
+      'Diagnosed order generator crash on container startup',
+      'Fixed AttributeError: args.bad-rate → args.bad_rate',
+      'Restarted generator at 250 msg/s with 10% anomaly rate',
+      'Launched continuous streaming ETL loop daemon',
+      'Verified rows growing from 33 to 81+ in PostgreSQL',
+      'Scaled batch size to 2000 and interval to 2s'
+    ],
+    issues: ['Generator crashed with AttributeError on args.bad-rate'],
+    fixes: ['Fixed argparse attribute reference from args.bad-rate to args.bad_rate'],
+    tags: ['bug', 'fix', 'perf'],
+    filesCreated: 0, testsPassing: 33, rowsLoaded: 7280
+  },
+  {
+    id: 6, date: '2026-05-21',
+    title: 'The Crucible — 100,000 Rows Breached',
+    goal: 'Fix config propagation bug and achieve 100,000+ rows ingested',
+    summary: 'The hidden defect was found — batch_size: 2000 from YAML was never reaching the agents, causing them to crawl at batch 100. Dynamic config propagation was implemented, and the pipeline erupted: 109,000+ events loaded in minutes, peaking at 1,000 msg/s with a 10.19% quarantine rate.',
+    activities: [
+      'Identified batch_size propagation bug from YAML to agents',
+      'Implemented dynamic YAML → PipelineConfig property mapping',
+      'Restarted daemon with propagated 2000-message batches',
+      'Achieved 109,000+ rows loaded in PostgreSQL',
+      'Measured peak throughput of 1,000 messages/second',
+      'Verified 10.19% quarantine rate (6,729 quarantined)'
+    ],
+    issues: ['YAML batch_size: 2000 silently ignored, defaulting to 100'],
+    fixes: ['Added dynamic config propagation in StreamingETL.__init__()'],
+    tags: ['bug', 'fix', 'perf'],
+    filesCreated: 0, testsPassing: 33, rowsLoaded: 109000
+  },
+  {
+    id: 7, date: '2026-06-08',
+    title: 'The Library — Repository Goes Public',
+    goal: 'Design advanced GitHub representation, add CI/CD, and push to GitHub',
+    summary: 'The codebase found its public home. A GitHub Actions CI workflow was forged, CONTRIBUTING.md and SECURITY.md established governance, and the README was transformed with Mermaid sequence diagrams and performance benchmarks. The repository was pushed to github.com/VamsiReddy17/multi-agent-etl-console.',
+    activities: [
+      'Scanned repository for sensitive credentials (none found)',
+      'Created .gitignore for .env, caches, logs, pid files',
+      'Initialized Git repository and pushed to GitHub',
+      'Added GitHub Actions CI workflow with pytest',
+      'Created CONTRIBUTING.md and SECURITY.md',
+      'Redesigned README with Mermaid diagrams and benchmarks'
+    ],
+    issues: ['Non-interactive terminal could not prompt for git credentials'],
+    fixes: ['User ran initial git push in interactive terminal; credential helper cached'],
+    tags: ['feature', 'feature'],
+    filesCreated: 4, testsPassing: 33, rowsLoaded: 109000
+  }
+];
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  DATA: Bugs (The Bestiary)
+// ═══════════════════════════════════════════════════════════════════════════════
+const BUGS = [
+  {
+    id: 'BUG-001', title: 'Airflow API Connexion V3 Crash', severity: 'CRITICAL', status: 'fixed',
+    discoveredIn: 'Session 2', fixedIn: 'Session 2', file: 'requirements.txt',
+    description: 'The Airflow Webserver crashed on boot with TypeError: __init__() got an unexpected keyword argument \'skip_error_handlers\'. Connexion v3 removed this legacy argument that Airflow 2.5.3 depends on.',
+    errorOutput: 'TypeError: __init__() got an unexpected keyword argument \'skip_error_handlers\'',
+    rootCause: 'Unconstrained pip resolution installed connexion v3.3.0, which removed the skip_error_handlers parameter from its App constructor.',
+    fix: 'Locked connexion[swagger]==2.14.2 in requirements.txt',
+    lesson: 'Always lock major sub-dependencies to prevent transitive breaking changes in production environments.'
+  },
+  {
+    id: 'BUG-002', title: 'Pendulum Timezone Module Incompatibility', severity: 'CRITICAL', status: 'fixed',
+    discoveredIn: 'Session 2', fixedIn: 'Session 2', file: 'requirements.txt',
+    description: 'All Airflow services threw TypeError: \'module\' object is not callable when attempting pendulum.tz.timezone("UTC") during datetime operations.',
+    errorOutput: 'TypeError: \'module\' object is not callable',
+    rootCause: 'Pendulum v3 restructured its timezone module, changing tz.timezone from a callable function to a module object. Airflow 2.5.3 calls it directly.',
+    fix: 'Forced pendulum==2.1.2 across the dependency ecosystem',
+    lesson: 'In legacy Airflow networks (v2.5.x), always lock timezone packages strictly to v2.'
+  },
+  {
+    id: 'BUG-003', title: 'Flask-Session Namespace Shift', severity: 'CRITICAL', status: 'fixed',
+    discoveredIn: 'Session 2', fixedIn: 'Session 2', file: 'requirements.txt',
+    description: 'Database upgrades failed with ModuleNotFoundError: No module named \'flask_session.sessions\' due to internal file structure refactoring in flask-session v0.8.0.',
+    errorOutput: 'ModuleNotFoundError: No module named \'flask_session.sessions\'',
+    rootCause: 'flask-session v0.8.0 completely refactored its internal package layout, removing the flask_session.sessions submodule that Airflow imports.',
+    fix: 'Locked flask-session==0.4.0 in the Airflow build environment',
+    lesson: 'Lock supporting UI plugins to versions validated against your orchestrator.'
+  },
+  {
+    id: 'BUG-004', title: 'SQLAlchemy v2.0 Breaking Changes', severity: 'CRITICAL', status: 'fixed',
+    discoveredIn: 'Session 2', fixedIn: 'Session 2', file: 'requirements.txt',
+    description: 'Docker builds failed because SQLAlchemy v2.0 is fundamentally incompatible with Airflow 2.5.3, which enforces a strict <2.0 upper bound.',
+    errorOutput: 'ERROR: Cannot install sqlalchemy==2.0.0 — apache-airflow 2.5.3 depends on sqlalchemy<2.0',
+    rootCause: 'SQLAlchemy 2.0 introduced breaking API changes incompatible with Airflow\'s ORM layer.',
+    fix: 'Downgraded and pinned sqlalchemy==1.4.40 in requirements.txt',
+    lesson: 'Check parent dependency bounds before updating helper ORMs.'
+  },
+  {
+    id: 'BUG-005', title: 'Quality Agent Mock Test Short-Circuit', severity: 'HIGH', status: 'fixed',
+    discoveredIn: 'Session 3', fixedIn: 'Session 3', file: 'tests/test_pipeline.py',
+    description: 'Providing a small mock batch (2 valid, 1 bad) yielded a 33.3% anomaly rate, exceeding the 20% safety threshold, causing the Quality Agent to abort the entire pipeline run.',
+    errorOutput: 'Quarantine rate 33.3% exceeds threshold 20.0% — aborting load',
+    rootCause: 'The test used too few records (3 total), making a single bad record produce an artificially high quarantine percentage.',
+    fix: 'Adjusted test dataset to 5 valid + 1 quarantined = 16.7% rate',
+    lesson: 'Ensure test dataset sizes accurately reflect operational threshold rules.'
+  },
+  {
+    id: 'BUG-006', title: 'Kafka Batch Size Propagation Defect', severity: 'HIGH', status: 'fixed',
+    discoveredIn: 'Session 6', fixedIn: 'Session 6', file: 'pipelines/streaming_etl.py',
+    description: 'The pipeline YAML config value batch_size: 2000 was completely ignored. The Kafka consumer silently defaulted to a batch size of 100, throttling throughput by 95%.',
+    errorOutput: 'N/A — Silent performance degradation (no error thrown)',
+    rootCause: 'StreamingETL.__init__() loaded YAML config but never mapped the properties to self.config before instantiating agents.',
+    fix: 'Mapped YAML fields to PipelineConfig properties in StreamingETL.__init__() before agent creation',
+    lesson: 'Always trace dynamic configuration properties through the full chain to ensure file settings reach all consumers.'
+  },
+  {
+    id: 'BUG-007', title: 'ETL Loop Premature Termination', severity: 'MEDIUM', status: 'fixed',
+    discoveredIn: 'Session 4', fixedIn: 'Session 4', file: 'pipelines/config/pipeline_config.yaml',
+    description: 'The background streaming pipeline daemon automatically terminated after 10 loops, killing the metrics endpoint and stopping all data processing.',
+    errorOutput: '[StreamingETL] 10 consecutive empty polls — stopping',
+    rootCause: 'max_empty_polls was set to 10, causing clean loop exit after 10 empty Kafka pulls.',
+    fix: 'Set max_empty_polls to 0 (infinite) in pipeline_config.yaml',
+    lesson: 'For always-on streaming daemons, ensure termination guards are disabled or set to infinity.'
+  },
+  {
+    id: 'BUG-008', title: 'Order Generator AttributeError Crash', severity: 'HIGH', status: 'fixed',
+    discoveredIn: 'Session 5', fixedIn: 'Session 5', file: 'scripts/generate_orders.py',
+    description: 'The order_generator container crashed immediately on startup with an AttributeError when trying to access the bad-rate command line argument.',
+    errorOutput: 'AttributeError: \'Namespace\' object has no attribute \'bad\'',
+    rootCause: 'Python argparse converts hyphenated argument names (--bad-rate) to underscored attributes (bad_rate), but the code referenced args.bad-rate which Python interprets as args.bad minus rate.',
+    fix: 'Changed args.bad-rate to args.bad_rate in generate_orders.py',
+    lesson: 'Always use underscored attribute names when accessing argparse arguments in Python.'
+  },
+  {
+    id: 'BUG-009', title: 'Missing Container Environment Variables', severity: 'CRITICAL', status: 'fixed',
+    discoveredIn: 'Session 2', fixedIn: 'Session 2', file: 'docker-compose.yml',
+    description: 'Pipeline tasks inside Airflow containers failed to connect to Postgres and Kafka because environment variables defaulted to localhost instead of Docker network hostnames.',
+    errorOutput: 'NoBrokersAvailable — connection refused at localhost:9092',
+    rootCause: '.env file was excluded from Docker context by .dockerignore, and compose services didn\'t explicitly set POSTGRES_HOST and KAFKA_BROKER.',
+    fix: 'Added explicit environment mappings: POSTGRES_HOST=postgres, KAFKA_BROKER=kafka:9092',
+    lesson: 'Never rely on .env files inside Docker containers — set all critical env vars explicitly in docker-compose.yml.'
+  }
+];
+
+// ═══════════════════════════════════════════════════════════════════════════════
+//  DATA: Components (The Watchtower)
+// ═══════════════════════════════════════════════════════════════════════════════
 const INITIAL_COMPONENTS = [
-  { id: 'zookeeper', name: 'Zookeeper Co-ordinator', type: 'infra', status: 'up', port: 2181, description: 'Manages and co-ordinates the Apache Kafka cluster.', memory: '48 MB', lag: '0ms' },
+  { id: 'zookeeper', name: 'Zookeeper Coordinator', type: 'infra', status: 'up', port: 2181, description: 'Manages and coordinates the Apache Kafka cluster.', memory: '48 MB', lag: '0ms' },
   { id: 'kafka', name: 'Apache Kafka Broker', type: 'infra', status: 'up', port: 9092, description: 'Highly-durable, high-throughput message streaming queue.', memory: '240 MB', lag: '2ms' },
   { id: 'redis', name: 'Redis Task Queue', type: 'infra', status: 'up', port: 6379, description: 'In-memory queue supporting Airflow\'s Celery Task Executors.', memory: '18 MB', lag: '0.1ms' },
   { id: 'postgres', name: 'PostgreSQL DW', type: 'infra', status: 'up', port: 5432, description: 'Target data warehouse hosting warehouse.order_events and audit logs.', memory: '85 MB', lag: '5ms' },
   { id: 'airflow_webserver', name: 'Airflow Web UI', type: 'orchestrator', status: 'up', port: 8080, description: 'Provides visual interface for DAG scheduling and system logs.', memory: '124 MB', lag: '0.5s' },
   { id: 'airflow_scheduler', name: 'Airflow Scheduler', type: 'orchestrator', status: 'up', port: '—', description: 'Triggers active streaming and batch DAG workflows.', memory: '98 MB', lag: '1.2s' },
-  { id: 'airflow_worker', name: 'Airflow Worker (Celery)', type: 'orchestrator', status: 'up', port: '—', description: 'Executes concurrent DAG worker tasks.', memory: '156 MB', lag: '0.8s' },
-  { id: 'ingestion_agent', name: 'Kafka Ingestion Agent', type: 'agent', status: 'up', port: '—', description: 'Polls topic, deserialises JSON events with fault tolerance.', memory: '34 MB', lag: '28ms' },
-  { id: 'transform_agent', name: 'Transform Agent', type: 'agent', status: 'up', port: '—', description: 'Type coerces, enriches metrics, and calculates totals.', memory: '28 MB', lag: '14ms' },
+  { id: 'airflow_worker', name: 'Airflow Worker', type: 'orchestrator', status: 'up', port: '—', description: 'Executes concurrent DAG worker tasks via Celery.', memory: '156 MB', lag: '0.8s' },
+  { id: 'ingestion_agent', name: 'Kafka Ingestion Agent', type: 'agent', status: 'up', port: '—', description: 'Polls Kafka topic, deserializes JSON events with fault tolerance.', memory: '34 MB', lag: '28ms' },
+  { id: 'transform_agent', name: 'Transform Agent', type: 'agent', status: 'up', port: '—', description: 'Type coerces, enriches metadata, and calculates order totals.', memory: '28 MB', lag: '14ms' },
   { id: 'quality_agent', name: 'Quality Validation Agent', type: 'agent', status: 'up', port: '—', description: 'Performs data rules checks, quarantining bad records.', memory: '32 MB', lag: '19ms' },
   { id: 'load_agent', name: 'PostgreSQL Load Agent', type: 'agent', status: 'up', port: '—', description: 'Performs high-performance bulk batch database insertions.', memory: '42 MB', lag: '45ms' },
-  { id: 'prometheus', name: 'Prometheus Telemetry', type: 'monitor', status: 'up', port: 9090, description: 'Scrapes loop metrics from endpoint on port 8000.', memory: '52 MB', lag: '15s' },
+  { id: 'prometheus', name: 'Prometheus Telemetry', type: 'monitor', status: 'up', port: 9090, description: 'Scrapes pipeline loop metrics from endpoint on port 8000.', memory: '52 MB', lag: '15s' },
   { id: 'grafana', name: 'Grafana Dashboard', type: 'monitor', status: 'up', port: 3000, description: 'Auto-provisioned analytics charts visualizing throughput.', memory: '64 MB', lag: '—' }
-];
-
-const HISTORICAL_BUGS = [
-  {
-    id: 'BUG-001',
-    title: 'Airflow API Connexion V3 Crash',
-    severity: 'CRITICAL',
-    fixedIn: 'Session 2',
-    description: 'The Airflow Webserver crashed on boot with a Type Error: `__init__() got an unexpected keyword argument \'skip_error_handlers\'`. This occurred because Connexion v3 removed this legacy argument.',
-    fix: 'Locked `connexion[swagger]==2.14.2` explicitly in requirements.txt.',
-    learning: 'Always lock major sub-dependencies to avoid transitive breaking changes.'
-  },
-  {
-    id: 'BUG-002',
-    title: 'Pendulum Timezone Incompatibility',
-    severity: 'CRITICAL',
-    fixedIn: 'Session 2',
-    description: 'Services threw `TypeError: \'module\' object is not callable` in `pendulum.tz.timezone("UTC")` during datetime parse operations, following an unconstrained Pendulum v3 release.',
-    fix: 'Forced `pendulum==2.1.2` across the dependency ecosystem.',
-    learning: 'In older Airflow networks (v2.5.3), lock Timezone packages strictly to v2.'
-  },
-  {
-    id: 'BUG-003',
-    title: 'Flask-Session Module Namespace Shift',
-    severity: 'CRITICAL',
-    fixedIn: 'Session 2',
-    description: 'Database upgrades failed with `ModuleNotFoundError: No module named \'flask_session.sessions\'` due to internal file structure refactoring in newer versions.',
-    fix: 'Locked `flask-session==0.4.0` in the main Airflow build environment.',
-    learning: 'Lock supporting UI plugins to ensure database upgrades compile properly.'
-  },
-  {
-    id: 'BUG-004',
-    title: 'SQLAlchemy v2.0 Breaking Changes',
-    severity: 'CRITICAL',
-    fixedIn: 'Session 2',
-    description: 'Docker builds failed because SQLAlchemy v2.0 is fundamentally incompatible with Airflow 2.5.3, which enforces a strict `<2.0` upper bound.',
-    fix: 'Downgraded and pinned `sqlalchemy==1.4.40` in requirements.txt.',
-    learning: 'Check major parent dependency bounds before updating helper ORMs.'
-  },
-  {
-    id: 'BUG-005',
-    title: 'Quality Agent Mock Test Short-Circuit',
-    severity: 'HIGH',
-    fixedIn: 'Session 3',
-    description: 'Providing a small mock batch (2 valid, 1 bad) yielded a 33.3% anomaly rate, exceeding the 20% safety threshold, causing the Quality Agent to abort the pipeline run entirely.',
-    fix: 'Adjusted mock dataset to 5 valid records and 1 bad record (16.7%), remaining safely under the 20% limit.',
-    learning: 'Ensure testing sizes accurately reflect operational threshold rules.'
-  },
-  {
-    id: 'BUG-006',
-    title: 'Kafka Batch Size Propagation Defect',
-    severity: 'HIGH',
-    fixedIn: 'Session 6',
-    description: 'The pipeline configuration value (`batch_size: 2000`) was completely ignored, causing the Kafka consumer to default to a batch size of 100.',
-    fix: 'Mapped YAML fields to the PipelineConfig properties in `StreamingETL.__init__` before agent creation.',
-    learning: 'Always trace dynamic properties to ensure file settings reach clients.'
-  }
 ];
 
 const PRE_DEPLOY_CHECKLIST = [
@@ -105,38 +261,111 @@ const PRE_DEPLOY_CHECKLIST = [
   { id: 'dep3', text: 'Connexion pinned to 2.14.2' },
   { id: 'dep4', text: 'Flask-Session pinned to 0.4.0' },
   { id: 'limit1', text: 'Mock test anomaly rates kept under 20%' },
-  { id: 'prop1', text: 'Configuration YAML values mapped to Agent instances' }
+  { id: 'prop1', text: 'Configuration YAML values mapped to Agent instances' },
+  { id: 'env1', text: 'Docker environment variables explicitly set (not from .env)' },
+  { id: 'loop1', text: 'Streaming daemon max_empty_polls set to 0 (infinite)' }
 ];
 
-export default function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [liveMode, setLiveMode] = useState(false);
-  const [selectedComp, setSelectedComp] = useState(INITIAL_COMPONENTS[0]);
-  const [components, setComponents] = useState(INITIAL_COMPONENTS);
+// ═══════════════════════════════════════════════════════════════════════════════
+//  DATA: Codex (Development Fable Entries)
+// ═══════════════════════════════════════════════════════════════════════════════
+const CODEX_ENTRIES = [
+  {
+    title: 'Prologue — The Empty Scaffold',
+    date: 'Before Session 1',
+    text: 'The project began as a skeleton — Docker Compose infrastructure in place, but zero application code. No agents, no pipelines, no tests. Just the promise of what a multi-agent ETL system could become, waiting in the bones of postgres, kafka, and airflow containers.',
+    quote: '"In the beginning there was infrastructure, and infrastructure was without form, and void."',
+    milestone: null
+  },
+  {
+    title: 'Chapter I — The Four Agents',
+    date: '2026-05-20',
+    text: 'Four agents were forged in a single session. The Kafka Ingestion Agent to listen, the Transform Agent to shape, the Quality Agent to judge, and the Postgres Load Agent to persist. Each was given a strict JSON communication protocol — the language they would share to pass data between stages. A streaming orchestrator was built to bind them together, and Airflow DAGs were written to schedule their work.',
+    quote: '"Each agent knows only its task. Together, they know the pipeline."',
+    milestone: '26 files created from scratch'
+  },
+  {
+    title: 'Chapter II — The Dependency Wars',
+    date: '2026-05-20',
+    text: 'The first docker-compose up revealed a battlefield. Six critical dependency conflicts erupted simultaneously. Connexion v3 had silently removed a parameter Airflow needed. Pendulum v3 changed how timezones worked. Flask-Session restructured its modules. SQLAlchemy v2 broke everything. Each was hunted down, diagnosed, and pinned to a compatible version. By the end, 31 tests passed cleanly.',
+    quote: '"The hardest bugs are the ones your dependencies introduce when you aren\'t looking."',
+    milestone: '6 critical bugs fixed, 31 tests passing'
+  },
+  {
+    title: 'Chapter III — The Eye Opens',
+    date: '2026-05-21',
+    text: 'With the pipeline stable, it was time to see inside it. Prometheus and Grafana were woven into the Docker stack. Five custom metrics were instrumented directly into the streaming orchestrator — pipeline runs, rows processed, rows quarantined, stage durations, and batch latencies. A pre-built Grafana dashboard materialized automatically on port 3000, its panels ready to visualize throughput.',
+    quote: '"You cannot optimize what you cannot observe."',
+    milestone: 'Full observability stack operational'
+  },
+  {
+    title: 'Chapter IV — The Infinite Loop',
+    date: '2026-05-21',
+    text: 'A subtle defect emerged: the streaming daemon kept dying. After 10 empty Kafka polls, it would gracefully terminate — taking the metrics endpoint with it. The fix was simple but the lesson was deep: always-on services must have their safety guards configured for perpetuity, not convenience.',
+    quote: '"A daemon that stops is not a daemon at all."',
+    milestone: 'Prometheus target confirmed UP'
+  },
+  {
+    title: 'Chapter V — The Flood',
+    date: '2026-05-21',
+    text: 'A continuous order generator was unleashed: 250 events per second, each a simulated e-commerce order with a 10% anomaly injection rate. But the generator crashed immediately — args.bad-rate vs args.bad_rate, a classic Python argparse trap. Once fixed, data poured through the pipeline. The database grew from 33 rows to 81, then to thousands. The pipeline had proven it could swim.',
+    quote: '"The first thousand rows teach you more than the first hundred lines of code."',
+    milestone: '7,280+ rows loaded at 280 rows/sec'
+  },
+  {
+    title: 'Chapter VI — The Crucible',
+    date: '2026-05-21',
+    text: 'The final performance barrier was invisible. batch_size: 2000 was written in the YAML config, but the agents received 100. The StreamingETL orchestrator loaded the YAML but never propagated its values to the agent configuration objects. A single code change — dynamic property mapping in __init__() — unleashed the full power. 109,000+ rows in minutes. Peak throughput: 1,000 messages per second.',
+    quote: '"Configuration that isn\'t propagated is configuration that doesn\'t exist."',
+    milestone: '109,000+ rows loaded, 1,000 msg/s peak'
+  },
+  {
+    title: 'Chapter VII — The Library',
+    date: '2026-06-08',
+    text: 'The codebase left the developer\'s machine and entered the public world. Git was initialized, sensitive credentials were audited (none found), and the repository was pushed to GitHub. A CI workflow was added to run tests on every push. CONTRIBUTING.md and SECURITY.md established governance. The README was transformed into a living document with Mermaid sequence diagrams and performance benchmarks.',
+    quote: '"Code without a home is code without a future."',
+    milestone: 'Repository published to GitHub'
+  }
+];
 
-  // Advanced Controls
+// ═══════════════════════════════════════════════════════════════════════════════
+//  MAIN APP COMPONENT
+// ═══════════════════════════════════════════════════════════════════════════════
+export default function App() {
+  const [activeTab, setActiveTab] = useState('chronicle');
+  const [liveMode, setLiveMode] = useState(false);
+  const [components, setComponents] = useState(INITIAL_COMPONENTS);
+  const [selectedComp, setSelectedComp] = useState(INITIAL_COMPONENTS[0]);
+
+  // Chronicle expanded chapter
+  const [expandedChapter, setExpandedChapter] = useState(null);
+
+  // Bestiary filter
+  const [bugFilter, setBugFilter] = useState('ALL');
+  const [expandedBug, setExpandedBug] = useState(null);
+
+  // Simulation controls
   const [isGenerating, setIsGenerating] = useState(true);
   const [streamVelocity, setStreamVelocity] = useState(250);
   const [anomalyRate, setAnomalyRate] = useState(10.2);
 
-  // System Logs Simulator
+  // System logs
   const [logs, setLogs] = useState([
-    { id: 1, type: 'info', text: 'Initializing multi-agent telemetry stream...' },
-    { id: 2, type: 'success', text: 'Connected to local Docker socket: unix:///Users/vamsireddy/.docker/run/docker.sock' },
-    { id: 3, type: 'info', text: 'Active Kafka topic brokers exposed at localhost:9092' },
-    { id: 4, type: 'success', text: 'E2E bootstrap sequences complete! System fully operational.' }
+    { id: 1, type: 'info', text: '⟐ Initializing multi-agent telemetry stream...' },
+    { id: 2, type: 'success', text: '✦ Connected to Docker socket: unix:///var/run/docker.sock' },
+    { id: 3, type: 'info', text: '⟐ Active Kafka topic brokers at localhost:9092' },
+    { id: 4, type: 'success', text: '✦ E2E bootstrap complete — System fully operational' }
   ]);
-  const [autoScroll, setAutoScroll] = useState(true);
   const terminalRef = useRef(null);
 
-  // Advanced Kafka Lag state
+  // Kafka lag
   const [kafkaLag, setKafkaLag] = useState(0);
 
-  // Human-in-the-loop Quarantine Hub records
+  // Quarantine records
   const [quarantineRecords, setQuarantineRecords] = useState([
-    { id: 'REC-904', timestamp: '11:10:04', agent: 'QualityAgent', error: 'Negative value detected on total_amount', payload: '{\n  "order_id": 84920,\n  "customer_id": "cust_29402",\n  "total_amount": -12.50,\n  "currency": "USD"\n}' },
+    { id: 'REC-904', timestamp: '11:10:04', agent: 'QualityAgent', error: 'Negative value on total_amount', payload: '{\n  "order_id": 84920,\n  "customer_id": "cust_29402",\n  "total_amount": -12.50\n}' },
     { id: 'REC-908', timestamp: '11:12:15', agent: 'QualityAgent', error: 'Missing field: currency code', payload: '{\n  "order_id": 38104,\n  "customer_id": "cust_93014",\n  "total_amount": 89.99,\n  "currency": null\n}' },
-    { id: 'REC-911', timestamp: '11:15:32', agent: 'QualityAgent', error: 'Character overflow on country field', payload: '{\n  "order_id": 74910,\n  "customer_id": "cust_38102",\n  "total_amount": 412.00,\n  "currency": "USD",\n  "country": "UNITED STATES OF AMERICA EXTRA LARGE FIELD OVERFLOW"\n}' }
+    { id: 'REC-911', timestamp: '11:15:32', agent: 'QualityAgent', error: 'Character overflow on country field', payload: '{\n  "order_id": 74910,\n  "total_amount": 412.00,\n  "country": "OVERFLOW_FIELD"\n}' }
   ]);
   const [editingRecord, setEditingRecord] = useState(null);
   const [editorPayload, setEditorPayload] = useState('');
@@ -152,212 +381,104 @@ export default function App() {
       { id: 'evt_94824', customer: 'cust_28491', total: '$12.50', status: 'Quarantined', time: '11:15:42' },
       { id: 'evt_94825', customer: 'cust_90184', total: '$65.00', status: 'Passed', time: '11:15:48' }
     ],
-    'warehouse.orders': [
-      { id: 'ord_32941', customer: 'Jane Doe', total: '$232.40', status: 'Shipped', time: '11:12:01' },
-      { id: 'ord_32942', customer: 'John Smith', total: '$94.00', status: 'Processing', time: '11:13:14' },
-      { id: 'ord_32943', customer: 'Alice Johnson', total: '$1,024.50', status: 'Shipped', time: '11:14:50' },
-      { id: 'ord_32944', customer: 'Robert Lee', total: '$15.99', status: 'Pending', time: '11:15:10' }
-    ],
     'warehouse.pipeline_execution': [
       { id: 'run_683', dag: 'streaming_ingestion', tasks: '4/4', state: 'Success', latency: '128ms' },
       { id: 'run_684', dag: 'streaming_ingestion', tasks: '4/4', state: 'Success', latency: '135ms' },
       { id: 'run_685', dag: 'streaming_ingestion', tasks: '3/4', state: 'Failed', latency: '42ms' },
       { id: 'run_686', dag: 'streaming_ingestion', tasks: '4/4', state: 'Success', latency: '114ms' }
-    ],
-    'warehouse.schema_drift_logs': [
-      { id: 'drift_01', type: 'New Column', field: 'discount_code (varchar)', agent: 'QualityAgent', status: 'Logged', time: '11:02:40' },
-      { id: 'drift_02', type: 'Type Shift', field: 'total_amount (int -> float)', agent: 'TransformAgent', status: 'Approved', time: '11:05:15' }
     ]
   });
 
-  // Pipeline Metrics State
+  // Pipeline metrics
   const [metrics, setMetrics] = useState({
-    totalRuns: 33,
-    successRuns: 33,
-    processedIngest: 66000,
-    processedLoad: 59271,
-    quarantined: 6729,
-    quarantineRate: 10.19,
-    loadedCount: 249444,
-    ingestRate: 250,
-    avgLatency: 11.2,
-    stageDurations: {
-      ingestion: 0.13,
-      transform: 0.01,
-      quality: 0.006,
-      load: 0.19
-    }
+    totalRuns: 33, successRuns: 33,
+    processedIngest: 66000, processedLoad: 59271,
+    quarantined: 6729, quarantineRate: 10.19,
+    loadedCount: 249444, ingestRate: 250, avgLatency: 11.2,
+    stageDurations: { ingestion: 0.13, transform: 0.01, quality: 0.006, load: 0.19 }
   });
 
-  // Checklist interactive state
+  // Checklist
   const [checklist, setChecklist] = useState(
     PRE_DEPLOY_CHECKLIST.map(item => ({ ...item, checked: true }))
   );
 
-  // Particles for data-flow animation
+  // Particles for constellation
   const [particles, setParticles] = useState([]);
   const particleIdRef = useRef(0);
 
-  // Dynamic Service status toggler
+  // Toggle service status
   const toggleComponentStatus = (id) => {
-    setComponents(prev => {
-      return prev.map(comp => {
-        if (comp.id === id) {
-          const newStatus = comp.status === 'up' ? 'down' : 'up';
-          const timestamp = new Date().toLocaleTimeString();
-          setLogs(logPrev => [
-            ...logPrev,
-            {
-              id: Date.now(),
-              type: newStatus === 'up' ? 'success' : 'error',
-              text: `[${timestamp}] [System:Control] Service '${comp.name}' manually toggled ${newStatus.toUpperCase()}.`
-            }
-          ]);
-          return { ...comp, status: newStatus };
-        }
-        return comp;
-      });
-    });
+    setComponents(prev => prev.map(comp => {
+      if (comp.id === id) {
+        const newStatus = comp.status === 'up' ? 'down' : 'up';
+        const timestamp = new Date().toLocaleTimeString();
+        setLogs(logPrev => [...logPrev, {
+          id: Date.now(), type: newStatus === 'up' ? 'success' : 'error',
+          text: `[${timestamp}] Service '${comp.name}' toggled ${newStatus.toUpperCase()}`
+        }]);
+        return { ...comp, status: newStatus };
+      }
+      return comp;
+    }));
   };
 
-  // Connect to the WebSocket telemetry server if liveMode is active
+  // WebSocket for live mode
   useEffect(() => {
     if (!liveMode) return;
-
-    let socket;
-    let reconnectTimeout;
-
+    let socket, reconnectTimeout;
     const connect = () => {
-      console.log("[WebSocket] Connecting to telemetry gateway...");
       socket = new WebSocket("ws://localhost:8085/ws");
-
       socket.onopen = () => {
-        console.log("[WebSocket] Connected successfully!");
-        setLogs(prev => [
-          ...prev,
-          { id: Date.now(), type: "success", text: `[${new Date().toLocaleTimeString()}] [Telemetry] Successfully connected to live WebSocket gateway at ws://localhost:8085/ws` }
-        ]);
+        setLogs(prev => [...prev, { id: Date.now(), type: 'success', text: `[${new Date().toLocaleTimeString()}] ✦ Live WebSocket connected at ws://localhost:8085/ws` }]);
       };
-
       socket.onmessage = (event) => {
         try {
           const payload = JSON.parse(event.data);
-          
-          if (payload.metrics) {
-            setMetrics(prev => ({
-              ...prev,
-              ...payload.metrics
-            }));
-          }
-          
-          if (payload.logs && payload.logs.length > 0) {
-            setLogs(payload.logs);
-          }
-          
-          if (payload.quarantine) {
-            setQuarantineRecords(payload.quarantine);
-          }
-          
-          if (payload.db_records) {
-            setDbRecords(payload.db_records);
-          }
-        } catch (err) {
-          console.error("[WebSocket] Message parsing error:", err);
-        }
+          if (payload.metrics) setMetrics(prev => ({ ...prev, ...payload.metrics }));
+          if (payload.logs?.length > 0) setLogs(payload.logs);
+          if (payload.quarantine) setQuarantineRecords(payload.quarantine);
+          if (payload.db_records) setDbRecords(payload.db_records);
+        } catch (err) { console.error("[WS] Parse error:", err); }
       };
-
-      socket.onclose = () => {
-        console.log("[WebSocket] Disconnected. Reconnecting in 3s...");
-        reconnectTimeout = setTimeout(connect, 3000);
-      };
-
-      socket.onerror = (err) => {
-        console.error("[WebSocket] Connection error:", err);
-        socket.close();
-      };
+      socket.onclose = () => { reconnectTimeout = setTimeout(connect, 3000); };
+      socket.onerror = () => { socket.close(); };
     };
-
     connect();
-
-    return () => {
-      if (socket) socket.close();
-      if (reconnectTimeout) clearTimeout(reconnectTimeout);
-    };
+    return () => { if (socket) socket.close(); if (reconnectTimeout) clearTimeout(reconnectTimeout); };
   }, [liveMode]);
 
-  // Simulation Loop: Continually grows numbers and updates logs/inspector
+  // Simulation loop
   useEffect(() => {
     let intervalId;
     if (!liveMode && isGenerating) {
       intervalId = setInterval(() => {
         const isIngestUp = components.find(c => c.id === 'ingestion_agent')?.status === 'up';
         const isKafkaUp = components.find(c => c.id === 'kafka')?.status === 'up';
-        const isZookeeperUp = components.find(c => c.id === 'zookeeper')?.status === 'up';
-
         const timestamp = new Date().toLocaleTimeString();
 
-        // 1. Critical infrastructure down (Zookeeper/Kafka)
-        if (!isKafkaUp || !isZookeeperUp) {
-          setLogs(prev => [
-            ...prev,
-            {
-              id: Date.now() + 1,
-              type: 'error',
-              text: `[${timestamp}] [CRITICAL] [System] Broker failure: connection refused at localhost:9092. Pipeline stalled.`
-            }
-          ].slice(-50));
-          
+        if (!isKafkaUp) {
+          setLogs(prev => [...prev, { id: Date.now(), type: 'error', text: `[${timestamp}] ⚠ CRITICAL — Broker failure at localhost:9092` }].slice(-50));
           setMetrics(prev => ({ ...prev, ingestRate: 0 }));
-          
-          // Cascading Down downstream agents dynamically
-          setComponents(prev => prev.map(c => 
-            c.type === 'agent' ? { ...c, status: 'pending' } : c
-          ));
+          setComponents(prev => prev.map(c => c.type === 'agent' ? { ...c, status: 'pending' } : c));
           return;
         }
+        setComponents(prev => prev.map(c => c.type === 'agent' && c.status === 'pending' ? { ...c, status: 'up' } : c));
 
-        // If Kafka is restored, make sure agents show up
-        setComponents(prev => prev.map(c => 
-          c.type === 'agent' && c.status === 'pending' ? { ...c, status: 'up' } : c
-        ));
-
-        // 2. Ingestion agent offline -> Kafka lag builds up!
         if (!isIngestUp) {
           const lagGrowth = Math.round(streamVelocity * 2.0);
           setKafkaLag(prev => prev + lagGrowth);
-          
-          setLogs(prev => [
-            ...prev,
-            {
-              id: Date.now() + 1,
-              type: 'warning',
-              text: `[${timestamp}] [Warning] Kafka Ingest Agent is down. Backlog piling up on topic 'orders': +${lagGrowth} records.`
-            }
-          ].slice(-50));
-
-          setMetrics(prev => ({ ...prev, ingestRate: 0 }));
-          
-          // Set Kafka broker card lag dynamically
-          setComponents(prev => prev.map(c => 
-            c.id === 'kafka' ? { ...c, lag: `${kafkaLag + lagGrowth} events` } : c
-          ));
+          setLogs(prev => [...prev, { id: Date.now(), type: 'warning', text: `[${timestamp}] Ingest Agent down. Backlog: +${lagGrowth} records` }].slice(-50));
           return;
         }
 
-        // 3. Normal processing with burst speed support
         let batchSize = Math.round(streamVelocity * 2.0);
-        let isBurstMode = false;
-
+        let isBurst = false;
         if (kafkaLag > 0) {
-          isBurstMode = true;
-          const burstSize = Math.min(kafkaLag, batchSize * 3.0);
+          isBurst = true;
+          const burstSize = Math.min(kafkaLag, batchSize * 3);
           batchSize += burstSize;
           setKafkaLag(prev => Math.max(0, prev - burstSize));
-          
-          // Clear card lag indicator
-          setComponents(prev => prev.map(c => 
-            c.id === 'kafka' ? { ...c, lag: kafkaLag - burstSize > 0 ? `${kafkaLag - burstSize} events` : '2ms' } : c
-          ));
         }
 
         const badCount = Math.round(batchSize * (anomalyRate / 100));
@@ -368,792 +489,684 @@ export default function App() {
           const newQuarantined = prev.quarantined + badCount;
           const newLoaded = prev.processedLoad + goodCount;
           const newRate = parseFloat(((newQuarantined / newProcessed) * 100).toFixed(2));
-          
           return {
-            ...prev,
-            processedIngest: newProcessed,
-            quarantined: newQuarantined,
-            processedLoad: newLoaded,
-            loadedCount: prev.loadedCount + goodCount,
-            quarantineRate: newRate,
-            totalRuns: prev.totalRuns + 1,
-            successRuns: prev.successRuns + 1,
-            ingestRate: isBurstMode ? streamVelocity * 2 : streamVelocity
+            ...prev, processedIngest: newProcessed, quarantined: newQuarantined,
+            processedLoad: newLoaded, loadedCount: prev.loadedCount + goodCount,
+            quarantineRate: newRate, totalRuns: prev.totalRuns + 1,
+            successRuns: prev.successRuns + 1, ingestRate: isBurst ? streamVelocity * 2 : streamVelocity
           };
         });
 
-        // Dynamic Schema Drift Generation if anomaly injector > 30%
-        let driftLogged = false;
-        if (anomalyRate > 30 && Math.random() < 0.3) {
-          driftLogged = true;
-          const randDriftId = `drift_${Math.floor(Math.random() * 90) + 10}`;
-          const newDriftLog = {
-            id: randDriftId,
-            type: 'Schema Drift Warning',
-            field: 'discount_code (varchar)',
-            agent: 'QualityAgent',
-            status: 'Logged',
-            time: timestamp
-          };
-          
-          setDbRecords(prev => ({
-            ...prev,
-            'warehouse.schema_drift_logs': [newDriftLog, ...prev['warehouse.schema_drift_logs']].slice(0, 5)
-          }));
-        }
-
-        // Emit realistic logs
-        const randOffset = Math.floor(Math.random() * 1000) + 54000;
-        const newLogEntries = [
-          {
-            id: Date.now() + 1,
-            type: 'info',
-            text: `[${timestamp}] [Kafka:orders] Polled partition 0. Offset: ${randOffset}. ${isBurstMode ? '⚡ BURST RATE INGESTION ⚡' : 'Audited queue.'}`
-          },
-          {
-            id: Date.now() + 2,
-            type: 'success',
-            text: `[${timestamp}] [Agent:Ingest] Successfully parsed batch of ${batchSize} events. CPU lag: 11ms.`
-          }
+        const newLogs = [
+          { id: Date.now() + 1, type: 'info', text: `[${timestamp}] ⟐ Kafka:orders polled. ${isBurst ? '⚡ BURST' : 'Normal'} batch: ${batchSize}` },
+          { id: Date.now() + 2, type: 'success', text: `[${timestamp}] ✦ Ingest → ${batchSize} events parsed` }
         ];
-
-        if (driftLogged) {
-          newLogEntries.push({
-            id: Date.now() + 3,
-            type: 'warning',
-            text: `[${timestamp}] [Agent:Quality] SCHEMA DRIFT ALERT: Dynamically injected field 'discount_code' logged in Postgres.`
-          });
-        }
-
         if (badCount > 0) {
-          newLogEntries.push({
-            id: Date.now() + 4,
-            type: anomalyRate > 20 ? 'error' : 'warning',
-            text: `[${timestamp}] [Agent:Quality] Quality rules filtered: quarantined ${badCount} records (~${anomalyRate}% anomalies).`
-          });
-          
-          // Inject a new record to the Quarantine Hub logs
-          const randOrd = Math.floor(Math.random() * 90000) + 10000;
-          const newQuarRec = {
-            id: `REC-${randOrd}`,
-            timestamp,
-            agent: 'QualityAgent',
-            error: anomalyRate > 20 ? 'Schema verification mismatch' : 'Missing field: currency code',
-            payload: `{\n  "order_id": ${randOrd},\n  "customer_id": "cust_${Math.floor(Math.random() * 9000) + 1000}",\n  "total_amount": ${(Math.random() * 200).toFixed(2)},\n  "currency": null\n}`
-          };
-          setQuarantineRecords(prev => [newQuarRec, ...prev].slice(0, 10));
-
-        } else {
-          newLogEntries.push({
-            id: Date.now() + 4,
-            type: 'success',
-            text: `[${timestamp}] [Agent:Quality] Integrity verification PASSED.`
-          });
+          newLogs.push({ id: Date.now() + 3, type: anomalyRate > 20 ? 'error' : 'warning', text: `[${timestamp}] ⚑ Quality quarantined ${badCount} records (${anomalyRate}%)` });
+          const rId = Math.floor(Math.random() * 90000) + 10000;
+          setQuarantineRecords(prev => [{ id: `REC-${rId}`, timestamp, agent: 'QualityAgent', error: 'Missing field: currency', payload: `{\n  "order_id": ${rId},\n  "total_amount": ${(Math.random() * 200).toFixed(2)}\n}` }, ...prev].slice(0, 10));
         }
+        newLogs.push({ id: Date.now() + 4, type: 'success', text: `[${timestamp}] ✦ Load → ${goodCount} rows saved to PostgreSQL` });
+        setLogs(prev => [...prev, ...newLogs].slice(-50));
 
-        newLogEntries.push({
-          id: Date.now() + 5,
-          type: 'success',
-          text: `[${timestamp}] [Agent:Load] Postgres load execution complete. Rows saved: ${goodCount}.`
-        });
-
-        setLogs(prev => [...prev, ...newLogEntries].slice(-50)); 
-
-        // Update database records grid
-        const randCust = Math.floor(Math.random() * 90000) + 10000;
-        const randAmount = (Math.random() * 500 + 10).toFixed(2);
-        const newEvent = {
-          id: `evt_${Math.floor(Math.random() * 90000) + 10000}`,
-          customer: `cust_${randCust}`,
-          total: `$${randAmount}`,
-          status: Math.random() * 100 >= anomalyRate ? 'Passed' : 'Quarantined',
-          time: timestamp
-        };
-
-        const newOrder = {
-          id: `ord_${Math.floor(Math.random() * 90000) + 10000}`,
-          customer: ['Michael Scott', 'Dwight Schrute', 'Jim Halpert', 'Pam Beesly', 'Angela Martin'][Math.floor(Math.random() * 5)],
-          total: `$${randAmount}`,
-          status: ['Shipped', 'Processing', 'Pending'][Math.floor(Math.random() * 3)],
-          time: timestamp
-        };
-
-        const newDagRun = {
-          id: `run_${Math.floor(Math.random() * 900) + 100}`,
-          dag: 'streaming_ingestion',
-          tasks: '4/4',
-          state: 'Success',
-          latency: `${Math.floor(Math.random() * 100) + 80}ms`
-        };
-
+        // Update db records
+        const evt = { id: `evt_${Math.floor(Math.random() * 90000) + 10000}`, customer: `cust_${Math.floor(Math.random() * 90000) + 10000}`, total: `$${(Math.random() * 500 + 10).toFixed(2)}`, status: Math.random() * 100 >= anomalyRate ? 'Passed' : 'Quarantined', time: timestamp };
+        const run = { id: `run_${Math.floor(Math.random() * 900) + 100}`, dag: 'streaming_ingestion', tasks: '4/4', state: 'Success', latency: `${Math.floor(Math.random() * 100) + 80}ms` };
         setDbRecords(prev => ({
-          'warehouse.order_events': [newEvent, ...prev['warehouse.order_events']].slice(0, 5),
-          'warehouse.orders': [newOrder, ...prev['warehouse.orders']].slice(0, 5),
-          'warehouse.pipeline_execution': [newDagRun, ...prev['warehouse.pipeline_execution']].slice(0, 5),
-          'warehouse.schema_drift_logs': prev['warehouse.schema_drift_logs']
+          'warehouse.order_events': [evt, ...prev['warehouse.order_events']].slice(0, 5),
+          'warehouse.pipeline_execution': [run, ...prev['warehouse.pipeline_execution']].slice(0, 5)
         }));
-
       }, 2000);
     }
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-    };
+    return () => { if (intervalId) clearInterval(intervalId); };
   }, [liveMode, isGenerating, streamVelocity, anomalyRate, components, kafkaLag]);
 
-  // Particle emission logic for the dynamic data flow
+  // Particle emitter
   useEffect(() => {
     let intervalId;
-    const isIngestUp = components.find(c => c.id === 'ingestion_agent')?.status === 'up';
-    const isKafkaUp = components.find(c => c.id === 'kafka')?.status === 'up';
-    
-    if (isGenerating && isIngestUp && isKafkaUp) {
-      const emitRate = Math.max(150, 1000 - (streamVelocity * 0.8)); 
+    const isUp = components.find(c => c.id === 'ingestion_agent')?.status === 'up' && components.find(c => c.id === 'kafka')?.status === 'up';
+    if (isGenerating && isUp) {
       intervalId = setInterval(() => {
         const isBad = Math.random() * 100 < anomalyRate;
-        const id = particleIdRef.current++;
-        setParticles(prev => [
-          ...prev, 
-          { id, step: 0, isBad }
-        ]);
-      }, emitRate);
+        setParticles(prev => [...prev, { id: particleIdRef.current++, step: 0, isBad }]);
+      }, Math.max(150, 1000 - (streamVelocity * 0.8)));
     }
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-    };
+    return () => { if (intervalId) clearInterval(intervalId); };
   }, [isGenerating, streamVelocity, anomalyRate, components]);
 
-  // Update particles steps for transition animations
+  // Particle stepper
   useEffect(() => {
     let intervalId;
     if (isGenerating) {
       intervalId = setInterval(() => {
-        setParticles(prev => 
-          prev
-            .map(p => ({ ...p, step: p.step + 1 }))
-            .filter(p => p.step <= 4)
-        );
-      }, 1000);
+        setParticles(prev => prev.map(p => ({ ...p, step: p.step + 1 })).filter(p => p.step <= 4));
+      }, 900);
     }
-    return () => {
-      if (intervalId) clearInterval(intervalId);
-    };
+    return () => { if (intervalId) clearInterval(intervalId); };
   }, [isGenerating]);
 
-  // Auto scroll logs
+  // Auto-scroll terminal
   useEffect(() => {
-    if (autoScroll && terminalRef.current) {
-      terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
-    }
-  }, [logs, autoScroll]);
+    if (terminalRef.current) terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
+  }, [logs]);
 
-  // Toggle checklist items
-  const toggleChecklistItem = (id) => {
-    setChecklist(prev => 
-      prev.map(item => item.id === id ? { ...item, checked: !item.checked } : item)
-    );
-  };
+  // Compute system health
+  const healthyCount = components.filter(c => c.status === 'up').length;
+  const systemHealth = healthyCount === components.length ? 'healthy' : healthyCount > components.length * 0.7 ? 'degraded' : 'critical';
 
+  // Filtered bugs
+  const filteredBugs = bugFilter === 'ALL' ? BUGS : BUGS.filter(b => b.severity === bugFilter);
+
+  // Node positions for constellation
+  const nodePositions = [
+    { left: '8%', label: 'Kafka', cls: 'source' },
+    { left: '27%', label: 'Ingest', cls: 'ingest' },
+    { left: '46%', label: 'Transform', cls: 'transform' },
+    { left: '65%', label: 'Quality', cls: 'quality' },
+    { left: '84%', label: 'Postgres', cls: 'load' },
+  ];
+
+  // ═════════════════════════════════════════════════════════════════════════════
+  //  NAVIGATION CONFIG
+  // ═════════════════════════════════════════════════════════════════════════════
+  const navItems = [
+    { section: 'NARRATIVE' },
+    { id: 'chronicle', label: 'The Chronicle', icon: <BookOpen size={18} /> },
+    { id: 'bestiary', label: 'The Bestiary', icon: <Bug size={18} />, badge: BUGS.length },
+    { id: 'codex', label: 'The Codex', icon: <Award size={18} /> },
+    { section: 'OPERATIONS' },
+    { id: 'forge', label: 'The Forge', icon: <Activity size={18} /> },
+    { id: 'constellation', label: 'The Constellation', icon: <Layers size={18} /> },
+    { id: 'watchtower', label: 'The Watchtower', icon: <Eye size={18} /> },
+    { id: 'quarantine', label: 'The Quarantine', icon: <AlertTriangle size={18} />, badge: quarantineRecords.length },
+  ];
+
+  // ═════════════════════════════════════════════════════════════════════════════
+  //  RENDER
+  // ═════════════════════════════════════════════════════════════════════════════
   return (
-    <div className="app-container">
-      {/* 1. Left Navigation Drawer */}
-      <aside className="sidebar">
-        <div className="sidebar-header">
-          <Server size={28} className="text-primary" style={{ color: '#3b82f6' }} />
-          <div className="sidebar-title">GCP Pipeline Console</div>
+    <div className="fable-app">
+      {/* ──── SIDEBAR ──── */}
+      <aside className="fable-sidebar">
+        <div className="sidebar-brand">
+          <div className="brand-icon">
+            <Zap size={20} color="white" />
+          </div>
+          <div className="brand-title">The Fable</div>
+          <div className="brand-subtitle">Multi-Agent ETL Chronicle</div>
         </div>
-        
-        <nav className="sidebar-menu">
-          <div 
-            className={`menu-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-            onClick={() => setActiveTab('dashboard')}
-          >
-            <Activity size={20} />
-            <span>Topology & Metrics</span>
-          </div>
-          <div 
-            className={`menu-item ${activeTab === 'flow' ? 'active' : ''}`}
-            onClick={() => setActiveTab('flow')}
-          >
-            <Layers size={20} />
-            <span>Live Data Canvas</span>
-          </div>
-          <div 
-            className={`menu-item ${activeTab === 'quarantine' ? 'active' : ''}`}
-            onClick={() => setActiveTab('quarantine')}
-            style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <AlertTriangle size={20} style={{ color: quarantineRecords.length > 0 ? '#ef4444' : 'inherit' }} />
-              <span>Quarantine Hub</span>
-            </div>
-            {quarantineRecords.length > 0 && (
-              <span className="badge-count">{quarantineRecords.length}</span>
-            )}
-          </div>
-          <div 
-            className={`menu-item ${activeTab === 'checklist' ? 'active' : ''}`}
-            onClick={() => setActiveTab('checklist')}
-          >
-            <ShieldCheck size={20} />
-            <span>Agent Review Hub</span>
-          </div>
+
+        <nav className="sidebar-nav">
+          {navItems.map((item, i) => {
+            if (item.section) {
+              return <div key={i} className="nav-section-label">{item.section}</div>;
+            }
+            return (
+              <div
+                key={item.id}
+                className={`nav-item ${activeTab === item.id ? 'active' : ''}`}
+                onClick={() => setActiveTab(item.id)}
+              >
+                {item.icon}
+                <span>{item.label}</span>
+                {item.badge > 0 && <span className="nav-badge">{item.badge}</span>}
+              </div>
+            );
+          })}
         </nav>
-        
-        {/* Footer System Status Panel */}
-        <div style={{ padding: '20px', borderTop: '1px solid var(--border-color)', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', backgroundColor: '#10b981', display: 'inline-block' }}></span>
-            <span style={{ fontWeight: '600', color: 'var(--text-primary)' }}>ALL CONTAINER SEED UP</span>
+
+        <div className="sidebar-footer">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
+            <span className={`status-orb ${systemHealth}`}></span>
+            <span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: '0.78rem' }}>
+              {systemHealth === 'healthy' ? 'ALL SYSTEMS NOMINAL' : systemHealth === 'degraded' ? 'DEGRADED' : 'CRITICAL'}
+            </span>
           </div>
-          <div>Mode: {liveMode ? 'Live Metrics Mode' : 'Local Simulation'}</div>
-          <div style={{ marginTop: '4px' }}>Port: 8082 (Dev Server)</div>
+          <div style={{ color: 'var(--text-muted)' }}>{healthyCount}/{components.length} services up</div>
+          <div style={{ color: 'var(--text-muted)', marginTop: 2 }}>
+            {liveMode ? 'Live Telemetry Mode' : 'Simulation Mode'}
+          </div>
         </div>
       </aside>
 
-      {/* 2. Main Workspace */}
-      <main className="main-content">
-        
-        {/* Top App Bar */}
-        <header className="topbar">
-          <div className="topbar-left">
-            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', fontWeight: '700', margin: 0 }}>
-              Multi-Agent Ingestion Pipeline
-            </h1>
-            <span className="system-tag">production-ready</span>
+      {/* ──── MAIN ──── */}
+      <main className="fable-main">
+        <header className="fable-topbar">
+          <div className="topbar-title">
+            {activeTab === 'chronicle' && '📜 The Chronicle'}
+            {activeTab === 'bestiary' && '🐛 The Bestiary'}
+            {activeTab === 'codex' && '📖 The Codex'}
+            {activeTab === 'forge' && '⚡ The Forge'}
+            {activeTab === 'constellation' && '✨ The Constellation'}
+            {activeTab === 'watchtower' && '🗼 The Watchtower'}
+            {activeTab === 'quarantine' && '🔒 The Quarantine'}
           </div>
-          
-          <div className="topbar-right">
-            <div className="mode-toggle">
-              <span style={{ fontSize: '0.8rem', fontWeight: '500', color: liveMode ? 'var(--text-secondary)' : '#60a5fa' }}>Simulation</span>
-              <label className="switch">
-                <input 
-                  type="checkbox" 
-                  checked={liveMode}
-                  onChange={(e) => setLiveMode(e.target.checked)}
-                />
-                <span className="slider"></span>
-              </label>
-              <span style={{ fontSize: '0.8rem', fontWeight: '500', color: liveMode ? '#60a5fa' : 'var(--text-secondary)' }}>Live Telemetry</span>
+          <div className="topbar-controls">
+            <div
+              className={`mode-pill ${liveMode ? 'active' : ''}`}
+              onClick={() => setLiveMode(!liveMode)}
+            >
+              <span className={`status-orb ${liveMode ? 'healthy' : 'degraded'}`} style={{ animation: 'none', width: 6, height: 6 }}></span>
+              {liveMode ? 'Live' : 'Simulation'}
             </div>
-            
-            <Heart size={20} className="text-secondary" style={{ color: '#ec4899' }} />
+            <Heart size={18} style={{ color: '#ec4899' }} />
           </div>
         </header>
 
-        {/* Scrollable Panel */}
-        <div className="workspace-panel">
-          
-          {/* TAB 1: DASHBOARD METRICS & TOPOLOGY */}
-          {activeTab === 'dashboard' && (
+        <div className="fable-workspace">
+
+          {/* ════════════════════════════════════════════════════════════════════
+              TAB 1: THE CHRONICLE
+          ════════════════════════════════════════════════════════════════════ */}
+          {activeTab === 'chronicle' && (
             <>
-              {/* Header Info */}
-              <div>
-                <h2 className="section-title">System Performance & Object Matrix</h2>
-                <p className="section-desc">Real-time status indicators and database ingestion counters at high throughput scale.</p>
+              <div className="chronicle-hero">
+                <h1>The Chronicle</h1>
+                <p>
+                  Every session of the Multi-Agent ETL Pipeline, told as chapters in a development saga — from empty scaffold to 109,000+ rows at 1,000 msg/s.
+                </p>
+                <div className="chronicle-stats">
+                  <div className="chronicle-stat">
+                    <div className="chronicle-stat-value">7</div>
+                    <div className="chronicle-stat-label">Sessions</div>
+                  </div>
+                  <div className="chronicle-stat">
+                    <div className="chronicle-stat-value">9</div>
+                    <div className="chronicle-stat-label">Bugs Fixed</div>
+                  </div>
+                  <div className="chronicle-stat">
+                    <div className="chronicle-stat-value">109K+</div>
+                    <div className="chronicle-stat-label">Rows Loaded</div>
+                  </div>
+                  <div className="chronicle-stat">
+                    <div className="chronicle-stat-value">33</div>
+                    <div className="chronicle-stat-label">Tests Passing</div>
+                  </div>
+                </div>
               </div>
 
-              {/* Metrics Row */}
-              <div className="metrics-row">
-                <div className="metric-card">
-                  <div className="metric-header">
-                    <span>Loaded DB Events</span>
-                    <Database size={18} style={{ color: '#3b82f6' }} />
+              <div className="timeline">
+                {SESSIONS.map((session) => (
+                  <div key={session.id} className="timeline-chapter">
+                    <div className="timeline-dot"></div>
+                    <div
+                      className={`chapter-card ${expandedChapter === session.id ? 'expanded' : ''}`}
+                      onClick={() => setExpandedChapter(expandedChapter === session.id ? null : session.id)}
+                    >
+                      <div className="chapter-meta">
+                        <span className="chapter-number">Session {session.id}</span>
+                        <span className="chapter-date">{session.date}</span>
+                        <span style={{ marginLeft: 'auto', color: 'var(--text-muted)' }}>
+                          {expandedChapter === session.id ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                        </span>
+                      </div>
+                      <div className="chapter-title">{session.title}</div>
+                      <div className="chapter-summary">{session.summary}</div>
+                      <div className="chapter-tags">
+                        {session.tags.map((tag, i) => (
+                          <span key={i} className={`chapter-tag tag-${tag}`}>{tag}</span>
+                        ))}
+                        {session.issues.length > 0 && (
+                          <span className="chapter-tag tag-bug">{session.issues.length} issue{session.issues.length > 1 ? 's' : ''}</span>
+                        )}
+                      </div>
+
+                      {expandedChapter === session.id && (
+                        <div className="chapter-details">
+                          <div className="chapter-detail-section">
+                            <div className="chapter-detail-label">🔍 Activities</div>
+                            <ul className="chapter-detail-list">
+                              {session.activities.map((a, i) => <li key={i}>{a}</li>)}
+                            </ul>
+                          </div>
+                          {session.issues.length > 0 && (
+                            <div className="chapter-detail-section">
+                              <div className="chapter-detail-label">⚠️ Issues Encountered</div>
+                              <ul className="chapter-detail-list">
+                                {session.issues.map((iss, i) => <li key={i} style={{ color: 'var(--crimson-glow)' }}>{iss}</li>)}
+                              </ul>
+                            </div>
+                          )}
+                          {session.fixes.length > 0 && (
+                            <div className="chapter-detail-section">
+                              <div className="chapter-detail-label">🔧 Fixes Applied</div>
+                              <ul className="chapter-detail-list">
+                                {session.fixes.map((f, i) => <li key={i} style={{ color: 'var(--emerald-glow)' }}>{f}</li>)}
+                              </ul>
+                            </div>
+                          )}
+                          <div style={{ display: 'flex', gap: 24, marginTop: 12, fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                            {session.filesCreated > 0 && <span>📄 {session.filesCreated} files created</span>}
+                            {session.testsPassing > 0 && <span>✅ {session.testsPassing} tests passing</span>}
+                            {session.rowsLoaded > 0 && <span>📊 {session.rowsLoaded.toLocaleString()} rows loaded</span>}
+                          </div>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                  <div className="metric-value" style={{ color: '#60a5fa' }}>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* ════════════════════════════════════════════════════════════════════
+              TAB 2: THE BESTIARY
+          ════════════════════════════════════════════════════════════════════ */}
+          {activeTab === 'bestiary' && (
+            <>
+              <div className="bestiary-header">
+                <h2>The Bestiary</h2>
+                <p>Every bug encountered, diagnosed, and conquered — with root cause analysis, fixes, and lessons learned.</p>
+              </div>
+
+              <div className="bestiary-filters">
+                {['ALL', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].map(f => (
+                  <button
+                    key={f}
+                    className={`filter-chip ${bugFilter === f ? 'active' : ''}`}
+                    onClick={() => setBugFilter(f)}
+                  >
+                    {f} {f !== 'ALL' && `(${BUGS.filter(b => b.severity === f).length})`}
+                  </button>
+                ))}
+              </div>
+
+              <div className="bestiary-grid">
+                {filteredBugs.map(bug => (
+                  <div
+                    key={bug.id}
+                    className={`bug-card severity-${bug.severity.toLowerCase()}`}
+                    onClick={() => setExpandedBug(expandedBug === bug.id ? null : bug.id)}
+                  >
+                    <div className="bug-card-header">
+                      <span className="bug-id">{bug.id}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span className={`severity-badge ${bug.severity.toLowerCase()}`}>{bug.severity}</span>
+                        <span style={{ fontSize: '0.68rem', color: 'var(--emerald)', fontWeight: 600 }}>✓ FIXED</span>
+                      </div>
+                    </div>
+                    <div className="bug-title">{bug.title}</div>
+                    <div className="bug-description">{bug.description}</div>
+
+                    {expandedBug === bug.id && (
+                      <div className="bug-fix-section">
+                        <div className="bug-fix-block">
+                          <div className="bug-fix-label"><Terminal size={12} /> Error Output</div>
+                          <div className="bug-fix-code">{bug.errorOutput}</div>
+                        </div>
+                        <div className="bug-fix-block">
+                          <div className="bug-fix-label"><Eye size={12} /> Root Cause</div>
+                          <div className="bug-fix-text">{bug.rootCause}</div>
+                        </div>
+                        <div className="bug-fix-block">
+                          <div className="bug-fix-label"><Wrench size={12} /> Fix Applied</div>
+                          <div className="bug-fix-code">{bug.fix}</div>
+                        </div>
+                        <div className="bug-lesson">
+                          💡 <strong>Lesson:</strong> {bug.lesson}
+                        </div>
+                        <div className="bug-meta-row">
+                          <span className="bug-meta"><Clock size={12} /> Discovered: {bug.discoveredIn}</span>
+                          <span className="bug-meta"><CheckCircle size={12} /> Fixed: {bug.fixedIn}</span>
+                          <span className="bug-meta"><Server size={12} /> {bug.file}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* ════════════════════════════════════════════════════════════════════
+              TAB 3: THE FORGE (Live Metrics)
+          ════════════════════════════════════════════════════════════════════ */}
+          {activeTab === 'forge' && (
+            <>
+              <div className="section-head">
+                <h2>The Forge</h2>
+                <p>Real-time pipeline performance metrics, throughput rates, and stage execution durations.</p>
+              </div>
+
+              {/* Metrics Grid */}
+              <div className="metrics-grid">
+                <div className="metric-tile blue">
+                  <div className="metric-tile-label">
+                    <span>Loaded DB Events</span>
+                    <Database size={16} style={{ color: 'var(--sapphire)' }} />
+                  </div>
+                  <div className="metric-tile-value" style={{ color: 'var(--sapphire-glow)' }}>
                     {metrics.loadedCount.toLocaleString()}
                   </div>
-                  <div className="metric-footer">
-                    <TrendingUp size={14} style={{ color: '#10b981' }} />
-                    <span>PostgreSQL warehouse loaded events</span>
+                  <div className="metric-tile-sub">
+                    <TrendingUp size={12} className="up" />
+                    <span className="up">PostgreSQL warehouse</span>
                   </div>
                 </div>
 
-                <div className="metric-card">
-                  <div className="metric-header">
+                <div className="metric-tile green">
+                  <div className="metric-tile-label">
                     <span>Throughput Rate</span>
-                    <Cpu size={18} style={{ color: '#10b981' }} />
+                    <Cpu size={16} style={{ color: 'var(--emerald)' }} />
                   </div>
-                  <div className="metric-value" style={{ color: '#34d399' }}>
-                    {metrics.ingestRate} <span style={{ fontSize: '1rem', fontWeight: '500' }}>events/s</span>
+                  <div className="metric-tile-value" style={{ color: 'var(--emerald-glow)' }}>
+                    {metrics.ingestRate} <span style={{ fontSize: '0.9rem', fontWeight: 400 }}>evt/s</span>
                   </div>
-                  <div className="metric-footer">
-                    <Activity size={14} style={{ color: '#34d399' }} />
-                    <span>Peak ingestion: 1,000 events/s</span>
+                  <div className="metric-tile-sub">
+                    <Activity size={12} className="up" />
+                    <span>Peak: 1,000 evt/s</span>
                   </div>
                 </div>
 
-                <div className="metric-card">
-                  <div className="metric-header">
-                    <span>Anomaly Rate</span>
-                    <AlertTriangle size={18} style={{ color: '#ef4444' }} />
+                <div className="metric-tile red">
+                  <div className="metric-tile-label">
+                    <span>Quarantine Rate</span>
+                    <AlertTriangle size={16} style={{ color: 'var(--crimson)' }} />
                   </div>
-                  <div className="metric-value" style={{ color: '#f87171' }}>
+                  <div className="metric-tile-value" style={{ color: 'var(--crimson-glow)' }}>
                     {metrics.quarantineRate}%
                   </div>
-                  <div className="metric-footer">
-                    <CheckCircle size={14} style={{ color: '#ef4444' }} />
-                    <span>Safety limit: Under 20.0% max</span>
+                  <div className="metric-tile-sub">
+                    <ShieldCheck size={12} />
+                    <span>Safety limit: 20.0%</span>
                   </div>
                 </div>
 
-                <div className="metric-card">
-                  <div className="metric-header">
+                <div className="metric-tile amber">
+                  <div className="metric-tile-label">
                     <span>Pipeline Runs</span>
-                    <RefreshCw size={18} style={{ color: '#f59e0b' }} />
+                    <RefreshCw size={16} style={{ color: 'var(--amber)' }} />
                   </div>
-                  <div className="metric-value">
+                  <div className="metric-tile-value" style={{ color: 'var(--amber)' }}>
                     {metrics.successRuns}
                   </div>
-                  <div className="metric-footer">
-                    <span>Successful batches (batch size: 2,000)</span>
+                  <div className="metric-tile-sub">
+                    <span>Batch size: 2,000</span>
                   </div>
                 </div>
               </div>
 
-              {/* Topology Map and Details side sheet */}
-              <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '28px', alignItems: 'start' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', fontWeight: '600', margin: 0 }}>
-                    Active Services Matrix
+              {/* Two-Column: Stages + Controls */}
+              <div className="two-col">
+                <div className="glass-card">
+                  <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 600, marginBottom: 20, color: 'var(--text-primary)' }}>
+                    Stage Execution Durations
                   </h3>
-                  
-                  <div className="components-grid">
-                    {components.map((comp) => (
-                      <div 
-                        key={comp.id} 
-                        className={`component-card ${selectedComp.id === comp.id ? 'selected' : ''}`}
-                        onClick={() => setSelectedComp(comp)}
-                      >
-                        <div className="component-header">
-                          <div className="component-title-row">
-                            <Server size={18} style={{ color: comp.type === 'agent' ? '#34d399' : '#60a5fa' }} />
-                            <span className="component-title">{comp.id.replace('_', ' ').toUpperCase()}</span>
-                          </div>
-                          
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }} onClick={(e) => e.stopPropagation()}>
-                            <label className="switch-sm">
-                              <input 
-                                type="checkbox" 
-                                checked={comp.status === 'up'}
-                                onChange={() => toggleComponentStatus(comp.id)}
-                              />
-                              <span className="slider-sm"></span>
-                            </label>
-                            <span className={`status-indicator ${comp.status}`} style={{ cursor: 'default' }}>
-                              {comp.status.toUpperCase()}
-                            </span>
-                          </div>
+                  <div className="stage-bars">
+                    {[
+                      { name: 'Ingestion', val: metrics.stageDurations.ingestion, max: 0.2, cls: 'blue' },
+                      { name: 'Transform', val: metrics.stageDurations.transform, max: 0.2, cls: 'violet' },
+                      { name: 'Quality', val: metrics.stageDurations.quality, max: 0.2, cls: 'amber' },
+                      { name: 'Load', val: metrics.stageDurations.load, max: 0.2, cls: 'green' },
+                    ].map(s => (
+                      <div key={s.name} className="stage-bar-row">
+                        <span className="stage-bar-label">{s.name}</span>
+                        <div className="stage-bar-track">
+                          <div className={`stage-bar-fill ${s.cls}`} style={{ width: `${(s.val / s.max) * 100}%` }}></div>
                         </div>
-
-                        <div className="component-stats">
-                          <div className="stat-row">
-                            <span>Connection:</span>
-                            <span className="stat-value">{comp.port === '—' ? 'IPC Socket' : `Port ${comp.port}`}</span>
-                          </div>
-                          <div className="stat-row">
-                            <span>Memory:</span>
-                            <span className="stat-value">{comp.memory}</span>
-                          </div>
-                          <div className="stat-row">
-                            <span>Lag/Ping:</span>
-                            <span className="stat-value">{comp.lag}</span>
-                          </div>
-                        </div>
+                        <span className="stage-bar-value">{s.val}s</span>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Side Sheet Details Panel */}
-                <div className="info-sheet">
-                  <div style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '16px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#60a5fa', marginBottom: '8px' }}>
-                      <Cpu size={20} />
-                      <span style={{ fontSize: '0.8rem', fontWeight: '700', letterSpacing: '1px', textTransform: 'uppercase' }}>
-                        {selectedComp.type} details
-                      </span>
-                    </div>
-                    <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', fontWeight: '700', margin: '4px 0' }}>
-                      {selectedComp.name}
-                    </h3>
-                  </div>
-
-                  <div style={{ fontSize: '0.9rem', lineHeight: '1.5', color: 'var(--text-secondary)' }}>
-                    {selectedComp.description}
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', borderTop: '1px solid var(--border-color)', paddingTop: '16px', fontSize: '0.85rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'between' }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>Status:</span>
-                      <span style={{ fontWeight: '600', color: '#34d399' }}>● ACTIVE / RUNNING</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'between' }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>Active Port:</span>
-                      <span style={{ fontWeight: '600' }}>{selectedComp.port}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'between' }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>Allocated Memory:</span>
-                      <span style={{ fontWeight: '600' }}>{selectedComp.memory}</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'between' }}>
-                      <span style={{ color: 'var(--text-secondary)' }}>Network Latency:</span>
-                      <span style={{ fontWeight: '600', color: '#fbbf24' }}>{selectedComp.lag}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </>
-          )}
-
-          {/* TAB 2: LIVE INGESTION CANVAS */}
-          {activeTab === 'flow' && (
-            <>
-              {/* Header Info */}
-              <div>
-                <h2 className="section-title">End-to-End Visual Data Flow</h2>
-                <p className="section-desc">Interactive trace monitoring active JSON data packets flowing from topics through sequential processing agents.</p>
-              </div>
-
-              {/* Blinking Critical Alert Banner */}
-              {anomalyRate > 20 && (
-                <div className="alert-banner blinking">
-                  <AlertOctagon size={20} className="shake" />
-                  <span>
-                    <strong>CRITICAL PIPELINE INCIDENT DETECTED:</strong> Anomaly isolation rate by Quality Agent is at <strong>{anomalyRate}%</strong>, exceeding the 20.0% max limit! System running in quarantine stress-test mode.
-                  </span>
-                </div>
-              )}
-
-              {/* 1. Visual Canvas Area */}
-              <div className="canvas-container">
-                <div className="flow-track">
-                  
-                  {/* Particle animations */}
-                  {isGenerating && particles.map((p) => {
-                    let className = "particle";
-                    if (p.isBad && p.step >= 2) className += " quarantined";
-                    
-                    let style = {};
-                    if (p.step === 1) style = { animation: 'flow1 1s linear forwards' };
-                    if (p.step === 2) style = { animation: 'flow2 1s linear forwards' };
-                    if (p.step === 3) style = { animation: 'flow3 1s linear forwards' };
-                    if (p.step === 4) style = { animation: 'flow4 1s linear forwards' };
-
-                    if (p.step === 0) return null;
-                    
-                    // If quarantined, particle diverges off track at step 3
-                    if (p.isBad && p.step === 3) {
-                      style = { 
-                        animation: 'flow3 1s linear forwards',
-                        transform: 'translateY(55px) scale(0.8)'
-                      };
-                    }
-                    if (p.isBad && p.step === 4) return null; 
-
-                    return (
-                      <div 
-                        key={p.id} 
-                        className={className} 
-                        style={style}
-                      />
-                    );
-                  })}
-
-                  <div className={`flow-node active ${isGenerating ? 'pulsing' : ''}`}>
-                    <Database size={24} style={{ color: '#3b82f6' }} />
-                    <span className="node-label">Kafka Topics</span>
-                  </div>
-
-                  <div className={`flow-node active ${isGenerating ? 'pulsing' : ''}`}>
-                    <Server size={24} style={{ color: '#10b981' }} />
-                    <span className="node-label">Ingest Agent</span>
-                  </div>
-
-                  <div className={`flow-node active ${isGenerating ? 'pulsing' : ''}`}>
-                    <Cpu size={24} style={{ color: '#3b82f6' }} />
-                    <span className="node-label">Transform Agent</span>
-                  </div>
-
-                  <div className={`flow-node active ${isGenerating ? 'pulsing-warn' : ''}`}>
-                    <ShieldCheck size={24} style={{ color: anomalyRate > 20 ? '#ef4444' : '#f59e0b' }} />
-                    <span className="node-label">Quality Agent</span>
-                  </div>
-
-                  <div className={`flow-node active ${isGenerating ? 'pulsing' : ''}`}>
-                    <Database size={24} style={{ color: '#10b981' }} />
-                    <span className="node-label">Postgres DW</span>
-                  </div>
-                </div>
-
-                {/* Legend Panel */}
-                <div style={{ display: 'flex', gap: '30px', borderTop: '1px solid var(--border-color)', width: '100%', paddingTop: '20px', justifyContent: 'center', fontSize: '0.85rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#3b82f6', display: 'inline-block' }}></span>
-                    <span>Valid Order Packet</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ width: '10px', height: '10px', borderRadius: '50%', backgroundColor: '#ef4444', display: 'inline-block' }}></span>
-                    <span>Anomaly (Quarantined)</span>
-                  </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ width: '30px', height: '4px', backgroundColor: 'var(--border-color)', display: 'inline-block' }}></span>
-                    <span>Data network stream</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* 2. Interactive Controls and Database Inspector split */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.25fr', gap: '28px', alignItems: 'start' }}>
-                
-                {/* Left panel: Controls */}
-                <div className="control-card">
-                  <div className="control-card-header">
-                    <Sliders size={20} style={{ color: '#3b82f6' }} />
-                    <span className="control-card-title">Ingestion & Telemetry Controllers</span>
-                  </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', padding: '4px 0' }}>
-                    {/* Toggle Stream */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div>
-                        <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>Event Stream Generator</div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Pause/resume mock telemetry streams</div>
-                      </div>
-                      <button 
-                        className={`action-btn ${isGenerating ? 'stop' : 'start'}`}
-                        onClick={() => {
-                          setIsGenerating(!isGenerating);
-                          const timestamp = new Date().toLocaleTimeString();
-                          setLogs(prev => [
-                            ...prev, 
-                            { 
-                              id: Date.now(), 
-                              type: isGenerating ? 'warning' : 'success', 
-                              text: `[${timestamp}] [System:Control] Event Ingestion Generator manually ${isGenerating ? 'PAUSED' : 'RESUMED'}.` 
-                            }
-                          ]);
-                        }}
+                <div className="controls-card">
+                  <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1rem', fontWeight: 600, marginBottom: 16, color: 'var(--text-primary)' }}>
+                    Simulation Controls
+                  </h3>
+                  <div className="control-row">
+                    <span className="control-label">Generator</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <button
+                        onClick={() => setIsGenerating(!isGenerating)}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', color: isGenerating ? 'var(--emerald)' : 'var(--crimson)' }}
                       >
                         {isGenerating ? <Pause size={16} /> : <Play size={16} />}
-                        <span>{isGenerating ? 'Pause Stream' : 'Resume Stream'}</span>
                       </button>
-                    </div>
-
-                    <hr style={{ border: 'none', height: '1px', backgroundColor: 'var(--border-color)', margin: 0 }} />
-
-                    {/* Stream Velocity */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                          <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>Ingestion Velocity</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Scale overall event throughput</div>
-                        </div>
-                        <span className="badge-blue">{streamVelocity} events/s</span>
-                      </div>
-                      <input 
-                        type="range" 
-                        min="10" 
-                        max="1000" 
-                        value={streamVelocity} 
-                        disabled={!isGenerating}
-                        onChange={(e) => setStreamVelocity(parseInt(e.target.value))}
-                        className="custom-range"
-                      />
-                    </div>
-
-                    <hr style={{ border: 'none', height: '1px', backgroundColor: 'var(--border-color)', margin: 0 }} />
-
-                    {/* Anomaly Injection */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <div>
-                          <div style={{ fontWeight: '600', fontSize: '0.9rem' }}>Data Anomaly Injector</div>
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Simulate corrupted JSON packets</div>
-                        </div>
-                        <span className={`badge-pill ${anomalyRate > 20 ? 'red' : 'yellow'}`}>{anomalyRate}%</span>
-                      </div>
-                      <input 
-                        type="range" 
-                        min="0" 
-                        max="50" 
-                        step="0.5"
-                        value={anomalyRate} 
-                        disabled={!isGenerating}
-                        onChange={(e) => setAnomalyRate(parseFloat(e.target.value))}
-                        className="custom-range"
-                      />
-                      <div style={{ fontSize: '0.75rem', color: anomalyRate > 20 ? '#f87171' : 'var(--text-secondary)', display: 'flex', gap: '6px', alignItems: 'center' }}>
-                        <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: anomalyRate > 20 ? '#ef4444' : '#f59e0b', display: 'inline-block' }}></span>
-                        <span>State: {anomalyRate < 5 ? 'PRISTINE' : anomalyRate < 15 ? 'NOMINAL' : anomalyRate < 20 ? 'ELEVATED' : 'CRITICAL INCIDENT ALERT!'}</span>
-                      </div>
+                      <span className="control-value">{isGenerating ? 'Active' : 'Paused'}</span>
                     </div>
                   </div>
-                </div>
-
-                {/* Right panel: Database Warehouse Inspector */}
-                <div className="control-card">
-                  <div className="control-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <Database size={20} style={{ color: '#10b981' }} />
-                      <span className="control-card-title">Live Postgres Warehouse Inspector</span>
+                  <div className="control-row">
+                    <span className="control-label">Velocity</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <input type="range" min="50" max="500" value={streamVelocity} onChange={(e) => setStreamVelocity(Number(e.target.value))} />
+                      <span className="control-value">{streamVelocity} evt/s</span>
                     </div>
-                    <span style={{ fontSize: '0.7rem', color: '#10b981', fontWeight: '600', letterSpacing: '0.5px' }}>● CONNECTED</span>
                   </div>
-
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                    {/* Selector Tabs */}
-                    <div className="table-selector-tabs">
-                      {Object.keys(dbRecords).map((tbl) => (
-                        <button 
-                          key={tbl}
-                          className={`table-tab-btn ${dbTable === tbl ? 'active' : ''}`}
-                          onClick={() => setDbTable(tbl)}
-                        >
-                          {tbl}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Table View */}
-                    <div className="db-table-wrapper">
-                      <table className="db-inspector-table">
-                        <thead>
-                          {dbTable === 'warehouse.order_events' && (
-                            <tr>
-                              <th>Event ID</th>
-                              <th>Customer</th>
-                              <th>Total Amount</th>
-                              <th>Validation</th>
-                              <th>Time Ingested</th>
-                            </tr>
-                          )}
-                          {dbTable === 'warehouse.orders' && (
-                            <tr>
-                              <th>Order ID</th>
-                              <th>Customer Name</th>
-                              <th>Total Price</th>
-                              <th>Status</th>
-                              <th>Time Loaded</th>
-                            </tr>
-                          )}
-                          {dbTable === 'warehouse.pipeline_execution' && (
-                            <tr>
-                              <th>Run ID</th>
-                              <th>Dag ID</th>
-                              <th>Executed Tasks</th>
-                              <th>DAG State</th>
-                              <th>Latency</th>
-                            </tr>
-                          )}
-                          {dbTable === 'warehouse.schema_drift_logs' && (
-                            <tr>
-                              <th>Drift ID</th>
-                              <th>Drift Type</th>
-                              <th>Field Name</th>
-                              <th>Detected By</th>
-                              <th>Status</th>
-                              <th>Logged At</th>
-                            </tr>
-                          )}
-                        </thead>
-                        <tbody>
-                          {dbRecords[dbTable].map((row, idx) => (
-                            <tr key={idx}>
-                              {dbTable === 'warehouse.order_events' && (
-                                <>
-                                  <td style={{ color: '#60a5fa', fontWeight: '600' }}>{row.id}</td>
-                                  <td>{row.customer}</td>
-                                  <td>{row.total}</td>
-                                  <td>
-                                    <span className={`status-pill ${row.status.toLowerCase()}`}>
-                                      {row.status}
-                                    </span>
-                                  </td>
-                                  <td>{row.time}</td>
-                                </>
-                              )}
-                              {dbTable === 'warehouse.orders' && (
-                                <>
-                                  <td style={{ color: '#34d399', fontWeight: '600' }}>{row.id}</td>
-                                  <td>{row.customer}</td>
-                                  <td>{row.total}</td>
-                                  <td>
-                                    <span className={`status-pill ${row.status.toLowerCase()}`}>
-                                      {row.status}
-                                    </span>
-                                  </td>
-                                  <td>{row.time}</td>
-                                </>
-                              )}
-                              {dbTable === 'warehouse.pipeline_execution' && (
-                                <>
-                                  <td style={{ color: '#fbbf24', fontWeight: '600' }}>{row.id}</td>
-                                  <td>{row.dag}</td>
-                                  <td>{row.tasks}</td>
-                                  <td>
-                                    <span className={`status-pill success`}>
-                                      {row.state}
-                                    </span>
-                                  </td>
-                                  <td style={{ color: '#fbbf24' }}>{row.latency}</td>
-                                </>
-                              )}
-                              {dbTable === 'warehouse.schema_drift_logs' && (
-                                <>
-                                  <td style={{ color: '#ec4899', fontWeight: '600' }}>{row.id}</td>
-                                  <td>{row.type}</td>
-                                  <td><code>{row.field}</code></td>
-                                  <td>{row.agent}</td>
-                                  <td>
-                                    <span className="status-pill warning" style={{ backgroundColor: 'rgba(245, 158, 11, 0.2)', color: '#f59e0b' }}>
-                                      {row.status}
-                                    </span>
-                                  </td>
-                                  <td>{row.time}</td>
-                                </>
-                              )}
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                  <div className="control-row">
+                    <span className="control-label">Anomaly %</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                      <input type="range" min="0" max="50" step="0.5" value={anomalyRate} onChange={(e) => setAnomalyRate(Number(e.target.value))} />
+                      <span className="control-value" style={{ color: anomalyRate > 20 ? 'var(--crimson)' : 'var(--amber)' }}>{anomalyRate}%</span>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* 3. System Terminal Logs Widget (Full width) */}
-              <div className="terminal-logs">
+              {/* Terminal */}
+              <div className="terminal-panel" style={{ marginTop: 24 }}>
                 <div className="terminal-header">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <Terminal size={18} style={{ color: '#60a5fa' }} />
-                    <span className="terminal-title">STDOUT STREAM TERMINAL</span>
+                  <div className="terminal-dots">
+                    <div className="terminal-dot red"></div>
+                    <div className="terminal-dot yellow"></div>
+                    <div className="terminal-dot green"></div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.75rem', color: 'var(--text-secondary)', cursor: 'pointer' }}>
-                      <input 
-                        type="checkbox" 
-                        checked={autoScroll} 
-                        onChange={(e) => setAutoScroll(e.target.checked)}
-                        style={{ cursor: 'pointer' }}
-                      />
-                      <span>Auto Scroll</span>
-                    </label>
-                    <button 
-                      className="terminal-clear-btn"
-                      onClick={() => setLogs([{ id: 1, type: 'info', text: 'Terminal cleared by user.' }])}
-                      title="Clear Logs"
-                    >
-                      <Trash2 size={14} />
-                      <span>Clear</span>
+                  <span className="terminal-title">pipeline_telemetry.log</span>
+                </div>
+                <div className="terminal-body" ref={terminalRef}>
+                  {logs.map(log => (
+                    <div key={log.id} className={`log-line ${log.type}`}>{log.text}</div>
+                  ))}
+                </div>
+              </div>
+
+              {/* DB Inspector */}
+              <div className="glass-card" style={{ marginTop: 24 }}>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 600, marginBottom: 16, color: 'var(--text-primary)' }}>
+                  Database Inspector
+                </h3>
+                <div className="db-tabs">
+                  {Object.keys(dbRecords).map(table => (
+                    <button key={table} className={`db-tab ${dbTable === table ? 'active' : ''}`} onClick={() => setDbTable(table)}>
+                      {table}
                     </button>
+                  ))}
+                </div>
+                <table className="db-table">
+                  <thead>
+                    <tr>
+                      {dbRecords[dbTable]?.[0] && Object.keys(dbRecords[dbTable][0]).map(col => (
+                        <th key={col}>{col}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {dbRecords[dbTable]?.map((row, i) => (
+                      <tr key={i}>
+                        {Object.entries(row).map(([key, val]) => (
+                          <td key={key}>
+                            {(key === 'status' || key === 'state') ? (
+                              <span className={`status-pill ${val.toLowerCase()}`}>{val}</span>
+                            ) : val}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          )}
+
+          {/* ════════════════════════════════════════════════════════════════════
+              TAB 4: THE CONSTELLATION (Data Flow Canvas)
+          ════════════════════════════════════════════════════════════════════ */}
+          {activeTab === 'constellation' && (
+            <>
+              <div className="section-head">
+                <h2>The Constellation</h2>
+                <p>Watch data particles flow through the four agents in real-time. Green sparks are valid records, red sparks are quarantined anomalies.</p>
+              </div>
+
+              <div className="constellation-canvas">
+                <div className="constellation-bg"></div>
+
+                {/* Connectors */}
+                {[0, 1, 2, 3].map(i => (
+                  <div
+                    key={`conn-${i}`}
+                    className="flow-connector"
+                    style={{
+                      left: `calc(${nodePositions[i].left} + 30px)`,
+                      width: `calc(${parseInt(nodePositions[i + 1].left) - parseInt(nodePositions[i].left)}% - 60px)`
+                    }}
+                  >
+                    <div className="flow-connector-line"></div>
+                  </div>
+                ))}
+
+                {/* Nodes */}
+                {nodePositions.map((node, i) => (
+                  <div key={i} className="flow-node" style={{ left: node.left }}>
+                    <div className={`flow-node-orb ${node.cls}`}>
+                      {i === 0 && <Server size={22} color="white" />}
+                      {i === 1 && <ArrowRight size={22} color="white" />}
+                      {i === 2 && <RefreshCw size={22} color="white" />}
+                      {i === 3 && <ShieldCheck size={22} color="white" />}
+                      {i === 4 && <Database size={22} color="white" />}
+                    </div>
+                    <span className="flow-node-label">{node.label}</span>
+                  </div>
+                ))}
+
+                {/* Particles */}
+                {particles.map(p => {
+                  const stepPercents = [10, 29, 48, 67, 86];
+                  const leftPos = stepPercents[Math.min(p.step, 4)];
+                  return (
+                    <div
+                      key={p.id}
+                      className={`flow-particle ${p.isBad ? 'bad' : 'good'}`}
+                      style={{ left: `${leftPos}%` }}
+                    ></div>
+                  );
+                })}
+              </div>
+
+              {/* Live stats under canvas */}
+              <div className="metrics-grid" style={{ marginTop: 0 }}>
+                <div className="metric-tile green">
+                  <div className="metric-tile-label"><span>Valid Records</span></div>
+                  <div className="metric-tile-value" style={{ color: 'var(--emerald-glow)', fontSize: '1.4rem' }}>
+                    {metrics.processedLoad.toLocaleString()}
                   </div>
                 </div>
+                <div className="metric-tile red">
+                  <div className="metric-tile-label"><span>Quarantined</span></div>
+                  <div className="metric-tile-value" style={{ color: 'var(--crimson-glow)', fontSize: '1.4rem' }}>
+                    {metrics.quarantined.toLocaleString()}
+                  </div>
+                </div>
+                <div className="metric-tile blue">
+                  <div className="metric-tile-label"><span>Total Processed</span></div>
+                  <div className="metric-tile-value" style={{ color: 'var(--sapphire-glow)', fontSize: '1.4rem' }}>
+                    {metrics.processedIngest.toLocaleString()}
+                  </div>
+                </div>
+                <div className="metric-tile amber">
+                  <div className="metric-tile-label"><span>Kafka Lag</span></div>
+                  <div className="metric-tile-value" style={{ color: 'var(--amber)', fontSize: '1.4rem' }}>
+                    {kafkaLag > 0 ? kafkaLag.toLocaleString() : '0'}
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
 
-                <div className="terminal-body" ref={terminalRef}>
-                  {logs.map((log) => (
-                    <div key={log.id} className={`terminal-line ${log.type}`}>
-                      <ChevronRight size={14} className="terminal-line-arrow" />
-                      <span>{log.text}</span>
+          {/* ════════════════════════════════════════════════════════════════════
+              TAB 5: THE WATCHTOWER (System Topology)
+          ════════════════════════════════════════════════════════════════════ */}
+          {activeTab === 'watchtower' && (
+            <>
+              <div className="section-head">
+                <h2>The Watchtower</h2>
+                <p>Monitor all {components.length} services. Toggle switches to simulate failures and observe cascading effects.</p>
+              </div>
+
+              <div className="two-col">
+                <div className="watchtower-grid">
+                  {components.map(comp => (
+                    <div
+                      key={comp.id}
+                      className={`service-card ${selectedComp.id === comp.id ? 'selected' : ''}`}
+                      onClick={() => setSelectedComp(comp)}
+                    >
+                      <div className="service-header">
+                        <span className="service-name">{comp.name}</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }} onClick={e => e.stopPropagation()}>
+                          <label className="toggle-switch">
+                            <input type="checkbox" checked={comp.status === 'up'} onChange={() => toggleComponentStatus(comp.id)} />
+                            <span className="toggle-slider"></span>
+                          </label>
+                          <span className={`service-status ${comp.status}`}>{comp.status}</span>
+                        </div>
+                      </div>
+                      <div className="service-stats">
+                        <div className="service-stat">
+                          <span className="service-stat-key">Port</span>
+                          <span className="service-stat-val">{comp.port === '—' ? 'IPC' : comp.port}</span>
+                        </div>
+                        <div className="service-stat">
+                          <span className="service-stat-key">Memory</span>
+                          <span className="service-stat-val">{comp.memory}</span>
+                        </div>
+                        <div className="service-stat">
+                          <span className="service-stat-key">Latency</span>
+                          <span className="service-stat-val">{comp.lag}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Detail Panel */}
+                <div className="detail-panel">
+                  <div className="detail-panel-type">{selectedComp.type} details</div>
+                  <div className="detail-panel-title">{selectedComp.name}</div>
+                  <div className="detail-panel-desc">{selectedComp.description}</div>
+                  <div className="detail-row">
+                    <span className="detail-key">Status</span>
+                    <span className="detail-val" style={{ color: selectedComp.status === 'up' ? 'var(--emerald)' : 'var(--crimson)' }}>
+                      ● {selectedComp.status.toUpperCase()}
+                    </span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-key">Port</span>
+                    <span className="detail-val">{selectedComp.port}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-key">Memory</span>
+                    <span className="detail-val">{selectedComp.memory}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="detail-key">Latency</span>
+                    <span className="detail-val">{selectedComp.lag}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Pre-Deploy Checklist */}
+              <div className="glass-card" style={{ marginTop: 24 }}>
+                <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 600, marginBottom: 16, color: 'var(--text-primary)' }}>
+                  Pre-Deploy Safety Checklist
+                </h3>
+                <div className="checklist-list">
+                  {checklist.map(item => (
+                    <div key={item.id} className="checklist-item" onClick={() => setChecklist(prev => prev.map(c => c.id === item.id ? { ...c, checked: !c.checked } : c))}>
+                      <div className={`checklist-check ${item.checked ? 'checked' : ''}`}>
+                        {item.checked && <Check size={12} color="white" />}
+                      </div>
+                      <span className={`checklist-text ${item.checked ? 'checked' : ''}`}>{item.text}</span>
                     </div>
                   ))}
                 </div>
@@ -1161,265 +1174,113 @@ export default function App() {
             </>
           )}
 
-          {/* TAB: QUARANTINE HUB */}
+          {/* ════════════════════════════════════════════════════════════════════
+              TAB 6: THE QUARANTINE
+          ════════════════════════════════════════════════════════════════════ */}
           {activeTab === 'quarantine' && (
             <>
-              <div>
-                <h2 className="section-title">Isolated Anomaly Quarantine Hub</h2>
-                <p className="section-desc">Human-in-the-loop operational panel. Review malformed JSON events caught by the validation agent, fix payload schemas, and re-inject them.</p>
+              <div className="section-head">
+                <h2>The Quarantine</h2>
+                <p>Records flagged by the Quality Validation Agent. Review, edit JSON payloads, and approve or reject reprocessing.</p>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1.25fr 1fr', gap: '28px', alignItems: 'start' }}>
-                {/* Left side: List of records */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', fontWeight: '600', margin: 0 }}>
-                    Active Isolation Queue ({quarantineRecords.length} items)
-                  </h3>
-                  
-                  {quarantineRecords.length === 0 ? (
-                    <div style={{ padding: '40px', backgroundColor: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: '16px', textAlign: 'center', color: 'var(--text-secondary)' }}>
-                      <CheckCircle size={32} style={{ color: '#10b981', marginBottom: '12px' }} />
-                      <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>All Queues Clear!</div>
-                      <div style={{ fontSize: '0.8rem', marginTop: '4px' }}>No records are currently held in quarantine.</div>
+              <div className="quarantine-grid">
+                {quarantineRecords.map(rec => (
+                  <div key={rec.id} className="quarantine-record">
+                    <div className="qr-header">
+                      <span className="qr-id">{rec.id}</span>
+                      <span className="qr-time">{rec.timestamp}</span>
                     </div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxHeight: '550px', overflowY: 'auto', paddingRight: '4px' }}>
-                      {quarantineRecords.map((rec) => (
-                        <div key={rec.id} className={`quarantine-card ${editingRecord?.id === rec.id ? 'active' : ''}`}>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                            <span style={{ fontFamily: 'monospace', fontWeight: '700', fontSize: '0.85rem', color: '#f87171' }}>{rec.id}</span>
-                            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>{rec.timestamp}</span>
-                          </div>
-                          
-                          <div style={{ fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-primary)', display: 'flex', gap: '6px', alignItems: 'center', marginBottom: '6px' }}>
-                            <AlertTriangle size={14} style={{ color: '#ef4444' }} />
-                            <span>{rec.error}</span>
-                          </div>
-                          
-                          <div style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', marginBottom: '12px' }}>
-                            Quarantined by: <span style={{ fontFamily: 'monospace' }}>{rec.agent}</span>
-                          </div>
+                    <div className="qr-error">
+                      <AlertTriangle size={14} style={{ color: 'var(--crimson)', verticalAlign: 'middle', marginRight: 6 }} />
+                      {rec.error}
+                    </div>
 
-                          <button 
-                            className="repair-btn"
-                            onClick={() => {
-                              setEditingRecord(rec);
-                              setEditorPayload(rec.payload);
-                              setJsonParseError(null);
-                            }}
-                          >
-                            <span>Inspect & Repair Payload</span>
-                            <ArrowRight size={14} />
+                    {editingRecord === rec.id ? (
+                      <>
+                        <textarea
+                          className="json-editor"
+                          value={editorPayload}
+                          onChange={e => {
+                            setEditorPayload(e.target.value);
+                            try { JSON.parse(e.target.value); setJsonParseError(null); } catch (err) { setJsonParseError(err.message); }
+                          }}
+                        />
+                        {jsonParseError && <div className="json-error">⚠ {jsonParseError}</div>}
+                        <div className="qr-actions">
+                          <button className="qr-btn approve" onClick={() => {
+                            if (!jsonParseError) {
+                              setQuarantineRecords(prev => prev.filter(r => r.id !== rec.id));
+                              setEditingRecord(null);
+                              setLogs(prev => [...prev, { id: Date.now(), type: 'success', text: `[${new Date().toLocaleTimeString()}] ✦ ${rec.id} approved and requeued` }]);
+                            }
+                          }}>
+                            <Check size={12} /> Approve
+                          </button>
+                          <button className="qr-btn" onClick={() => { setEditingRecord(null); setJsonParseError(null); }}>
+                            Cancel
                           </button>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Right side: Editor */}
-                <div>
-                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', fontWeight: '600', margin: '0 0 16px 0' }}>
-                    Interactive Payload Repair
-                  </h3>
-
-                  {editingRecord ? (
-                    <div className="editor-card">
-                      <div className="editor-header">
-                        <span style={{ fontWeight: '600' }}>Editing: {editingRecord.id}</span>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)' }}>Raw JSON Format</span>
-                      </div>
-                      
-                      <div className="editor-body">
-                        {jsonParseError && (
-                          <div className="editor-error-alert">
-                            <AlertTriangle size={16} />
-                            <span>{jsonParseError}</span>
-                          </div>
-                        )}
-                        
-                        <textarea 
-                          className="editor-textarea"
-                          value={editorPayload}
-                          onChange={(e) => setEditorPayload(e.target.value)}
-                          rows="10"
-                          placeholder="JSON order payload..."
-                        />
-                      </div>
-
-                      <div className="editor-footer">
-                        <button 
-                          className="editor-btn-secondary"
-                          onClick={() => {
-                            setEditingRecord(null);
-                            setEditorPayload('');
-                            setJsonParseError(null);
-                          }}
-                        >
-                          Cancel
-                        </button>
-                        <button 
-                          className="editor-btn-primary"
-                          onClick={async () => {
-                            try {
-                              const parsed = JSON.parse(editorPayload);
-                              
-                              if (liveMode) {
-                                // Real API Reprocessing Integration
-                                const response = await fetch("http://localhost:8085/reprocess", {
-                                  method: "POST",
-                                  headers: {
-                                    "Content-Type": "application/json"
-                                  },
-                                  body: JSON.stringify({
-                                    quarantine_id: editingRecord.id,
-                                    payload: parsed
-                                  })
-                                });
-                                
-                                const resData = await response.json();
-                                if (!response.ok) {
-                                  throw new Error(resData.detail || "Reprocessing failed.");
-                                }
-
-                                const timestamp = new Date().toLocaleTimeString();
-                                setLogs(prev => [
-                                  ...prev,
-                                  {
-                                    id: Date.now(),
-                                    type: 'success',
-                                    text: `[${timestamp}] [SUCCESS] [Human-In-The-Loop] Reprocessed record '${editingRecord.id}' successfully. Anomaly resolved, loaded 1 row into database.`
-                                  }
-                                ]);
-                              } else {
-                                // Simulated Reprocessing
-                                if (parsed.total_amount && parsed.total_amount < 0) {
-                                  throw new Error("Verification Failed: 'total_amount' cannot be negative.");
-                                }
-                                if (parsed.currency === null || parsed.currency === undefined || parsed.currency === "") {
-                                  throw new Error("Verification Failed: 'currency' field is required and cannot be null.");
-                                }
-
-                                setQuarantineRecords(prev => prev.filter(r => r.id !== editingRecord.id));
-                                
-                                setMetrics(prev => ({
-                                  ...prev,
-                                  loadedCount: prev.loadedCount + 1,
-                                  quarantined: Math.max(0, prev.quarantined - 1)
-                                }));
-
-                                const timestamp = new Date().toLocaleTimeString();
-                                setLogs(prev => [
-                                  ...prev,
-                                  {
-                                    id: Date.now(),
-                                    type: 'success',
-                                    text: `[${timestamp}] [SUCCESS] [Human-In-The-Loop] Reprocessed record '${editingRecord.id}' successfully. Anomaly resolved, loaded 1 row into database.`
-                                  }
-                                ]);
-                              }
-
-                              setEditingRecord(null);
-                              setEditorPayload('');
-                              setJsonParseError(null);
-                            } catch (err) {
-                              setJsonParseError(err.message || "Invalid JSON syntax. Please check braces and commas.");
-                            }
-                          }}
-                        >
-                          Verify & Reprocess
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="editor-placeholder">
-                      <Terminal size={32} style={{ color: 'var(--text-tertiary)', marginBottom: '12px' }} />
-                      <div>Select a record from the quarantine queue to launch the debugger editor.</div>
-                    </div>
-                  )}
-                </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="qr-payload">{rec.payload}</div>
+                        <div className="qr-actions">
+                          <button className="qr-btn" onClick={() => { setEditingRecord(rec.id); setEditorPayload(rec.payload); setJsonParseError(null); }}>
+                            <Edit3 size={12} /> Edit & Fix
+                          </button>
+                          <button className="qr-btn approve" onClick={() => {
+                            setQuarantineRecords(prev => prev.filter(r => r.id !== rec.id));
+                            setLogs(prev => [...prev, { id: Date.now(), type: 'success', text: `[${new Date().toLocaleTimeString()}] ✦ ${rec.id} approved as-is` }]);
+                          }}>
+                            <Check size={12} /> Approve
+                          </button>
+                          <button className="qr-btn reject" onClick={() => {
+                            setQuarantineRecords(prev => prev.filter(r => r.id !== rec.id));
+                            setLogs(prev => [...prev, { id: Date.now(), type: 'warning', text: `[${new Date().toLocaleTimeString()}] ⚑ ${rec.id} rejected and discarded` }]);
+                          }}>
+                            <Trash2 size={12} /> Reject
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                ))}
+                {quarantineRecords.length === 0 && (
+                  <div style={{ textAlign: 'center', padding: 48, color: 'var(--text-muted)' }}>
+                    <ShieldCheck size={40} style={{ marginBottom: 12, opacity: 0.4 }} />
+                    <div style={{ fontSize: '1rem', fontWeight: 500 }}>All clear</div>
+                    <div style={{ fontSize: '0.85rem', marginTop: 4 }}>No quarantined records pending review.</div>
+                  </div>
+                )}
               </div>
             </>
           )}
 
-          {/* TAB 3: AGENT REVIEW HUB */}
-          {activeTab === 'checklist' && (
-            <>
-              <div>
-                <h2 className="section-title">Agent Learner Board & Mistake Tracker</h2>
-                <p className="section-desc">Interactive review system logged for future AI agents to identify past pitfalls and protect against package regressions.</p>
+          {/* ════════════════════════════════════════════════════════════════════
+              TAB 7: THE CODEX (Development Fable)
+          ════════════════════════════════════════════════════════════════════ */}
+          {activeTab === 'codex' && (
+            <div className="codex-page">
+              <div className="codex-header">
+                <h2>The Codex</h2>
+                <p>"A living record of every decision, discovery, and lesson from the forge."</p>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '28px', alignItems: 'start' }}>
-                
-                {/* Pre-deployment Checklist */}
-                <div className="checklist-container">
-                  <div className="checklist-header">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <CheckSquare size={20} style={{ color: '#10b981' }} />
-                      <span>Pre-Deployment Safety Checklist</span>
+              {CODEX_ENTRIES.map((entry, i) => (
+                <div key={i} className="codex-entry">
+                  <div className="codex-entry-title">{entry.title}</div>
+                  <div className="codex-entry-date">{entry.date}</div>
+                  <div className="codex-text">{entry.text}</div>
+                  {entry.quote && <div className="codex-quote">{entry.quote}</div>}
+                  {entry.milestone && (
+                    <div className="codex-milestone">
+                      <Award size={14} /> {entry.milestone}
                     </div>
-                  </div>
-                  
-                  {checklist.map((item) => (
-                    <div 
-                      key={item.id}
-                      className={`checklist-item ${item.checked ? 'checked' : ''}`}
-                      onClick={() => toggleChecklistItem(item.id)}
-                    >
-                      <div className="checkbox-wrapper">
-                        <input 
-                          type="checkbox"
-                          checked={item.checked}
-                          onChange={() => {}} // handled by row click
-                          style={{ cursor: 'pointer' }}
-                        />
-                      </div>
-                      <span className="checklist-text">{item.text}</span>
-                    </div>
-                  ))}
-                  
-                  <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', padding: '12px', borderTop: '1px solid var(--border-color)', marginTop: '8px' }}>
-                    * Mark items as checked when verified in environments before committing code.
-                  </div>
+                  )}
                 </div>
-
-                {/* Bug Post-Mortems */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', fontWeight: '600', margin: 0, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <AlertTriangle size={20} style={{ color: '#ef4444' }} />
-                    <span>Past Bugs & Post-Mortem Reviews</span>
-                  </h3>
-                  
-                  <div className="bug-list">
-                    {HISTORICAL_BUGS.map((bug) => (
-                      <div key={bug.id} className="bug-card">
-                        <div className="bug-card-header">
-                          <div className="bug-id-row">
-                            <span className="bug-id">{bug.id}</span>
-                            <span className="bug-title">{bug.title}</span>
-                          </div>
-                          <span className="bug-severity">{bug.severity}</span>
-                        </div>
-
-                        <div className="bug-body">
-                          {bug.description}
-                          <div className="bug-code-block">
-                            {bug.fix}
-                          </div>
-                        </div>
-
-                        <div className="bug-footer">
-                          <span>Fixed in: {bug.fixedIn}</span>
-                          <span className="bug-learning">Lesson: {bug.learning}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-              </div>
-            </>
+              ))}
+            </div>
           )}
 
         </div>
