@@ -25,6 +25,8 @@
 | `scripts/generate_orders.py` | ✅ | Session 5 | Continuous Kafka order events generator with 10% anomalies |
 | `scripts/generate_orders.sh` | ✅ | Session 5 | Shell wrapper for running generator inside docker |
 | `docker-compose.yml (generator update)` | ✅ | Session 5 | Configures `order_generator` background daemon |
+| `monitoring/dashboard/src/index.css` (Cosmos) | ✅ | Session 10 | Renamed all fable classes and style tokens to Cosmos |
+| `monitoring/dashboard/src/App.jsx` (Cosmos) | ✅ | Session 10 | Refactored active states, headers, and Command Palette targets |
 
 ---
 
@@ -93,6 +95,9 @@
 | `docs/AIRFLOW_GUIDE.md` | ✅ | Session 1 | DAGs, connections, monitoring |
 | `docs/KAFKA_GUIDE.md` | ✅ | Session 1 | Topics, producers, consumers, offsets |
 | `docs/BIGQUERY_MIGRATION.md` | ✅ | Session 1 | Cloud migration path |
+| `COSMOS.md` (narrative chronicle) | ✅ | Session 10 | Renamed and updated from FABLE.md |
+| `design-ui/phases/phase-4-cosmos/DESIGN_PHASE_4.md` | ✅ | Session 10 | Created Phase 4 Cosmos specification |
+| `design-ui/DESIGN_SYSTEM.md` | ✅ | Session 10 | Updated to use Cosmos branding & hybrid naming |
 
 ---
 
