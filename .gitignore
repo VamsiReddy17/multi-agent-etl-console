@@ -6,6 +6,17 @@
 .env.staging
 .env.test
 
+# GCP Service Account Keys (exclude typical configs)
+*.json
+!package.json
+!tsconfig.json
+!plugin.json
+!plugin_config.json
+!manifest.json
+!composer.json
+!jsconfig.json
+
+
 # Python caching & packaging
 __pycache__/
 *.pyc
