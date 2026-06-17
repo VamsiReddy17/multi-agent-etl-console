@@ -1,6 +1,6 @@
-# 🎨 UI/UX Design System — Multi-Agent ETL Console
+# 🎨 UI/UX Design System — Multi-Agent Cosmic Array
 
-> *How leading companies design developer dashboards, and how we applied those patterns to build The Fable.*
+> *How leading companies design developer dashboards, and how we applied those patterns to build The Cosmos.*
 
 ---
 
@@ -92,7 +92,7 @@ We studied the design patterns of **Datadog, Grafana, Linear, Vercel, Netflix (B
 
 ## Design Principles
 
-Based on the industry research, we established **8 core design principles** for The Fable:
+Based on the industry research, we established **8 core design principles** for The Cosmos:
 
 ### 1. Narrative Over Numbers
 > *"Numbers without context are noise. Numbers with a story are insight."*
@@ -152,18 +152,18 @@ Inspired by Datadog and Linear, every data visualization includes context about 
 > *"Metaphors structure context. Literal labels guarantee understanding."*
 
 We pair creative metaphors (branding modules) with explicit, literal subtitles:
-* **The Chronicle** → *Session Timeline*
-* **The Bestiary** → *Errors & Bug Tracker*
-* **The Codex** → *Development Saga / Narrative*
-* **The Forge** → *Pipeline Metrics & Telemetry*
-* **The Constellation** → *Data Flow Canvas*
-* **The Watchtower** → *System Topology & Health*
-* **The Quarantine** → *Anomaly Isolation Hub*
+* **The Nebula** → *Session History Timeline*
+* **The Asteroid Belt** → *Errors & Bug Tracker*
+* **The Pulsar Log** → *Narrative Development Log*
+* **The Solar Core** → *Pipeline Metrics & Telemetry*
+* **The Constellation** → *Live Data Flow Canvas*
+* **The Orion Array** → *System Topology & Health*
+* **The Event Horizon** → *Anomaly Isolation Hub*
 
 This hybrid paradigm is designed directly into our code and UI:
-* **Sidebar Navigation**: Displays both metaphorical title and literal subtitle in a vertical stack (e.g. *The Chronicle* with *Session Timeline* beneath it).
-* **Command Palette (⌘K)**: Sub-labels each option (e.g. *Go to The Bestiary (Bug Tracker)*) for search ease.
-* **Topbar Headers**: Separates the metaphor and literal label with a thin vertical glass border (e.g. `📜 The Chronicle | Session Timeline`).
+* **Sidebar Navigation**: Displays both metaphorical title and literal subtitle in a vertical stack (e.g. *The Nebula* with *Session History Timeline* beneath it).
+* **Command Palette (⌘K)**: Sub-labels each option (e.g. *Go to The Asteroid Belt (Errors & Bug Tracker)*) for search ease.
+* **Topbar Headers**: Separates the metaphor and literal label with a thin vertical glass border (e.g. `🌌 The Nebula | Session History Timeline`).
 * **Onboarding Friendly**: Zero friction for new engineers who can navigate based on direct functional purposes.
 
 ---
@@ -240,19 +240,19 @@ This hybrid paradigm is designed directly into our code and UI:
 │                              UI DESIGN EVOLUTION TIMELINE                              │
 ├────────────────────────────────────────────────────────────────────────────────────────┤
 │                                                                                        │
-│  Phase 1                Phase 2                 Phase 3                 Phase 4        │
-│  ─────────              ─────────               ──────────────          ─────────────  │
-│  Material 3             The Fable               The Observatory         The Nexus      │
-│  May 20 – Jun 8         Jun 13 – Jun 16         Jun 17 (Active)         Planned        │
+│  Phase 1         Phase 2         Phase 3                 Phase 4                       │
+│  ─────────       ─────────       ──────────────          ─────────────                 │
+│  Material 3      The Fable       The Observatory         The Cosmos                    │
+│  May 20–Jun 8    Jun 13–Jun 16   Jun 17 (Superseded)     Jun 17 (Active)               │
 │                                                                                        │
-│  ● Light theme          ● Dark cinematic        ● ⌘K Palette            ● AI Chat      │
-│  ● Standard M3 cards    ● Glass-morphism        ● Keyboard shortcuts    ● Flame charts │
-│  ● System fonts         ● Custom typography     ● Sparklines & search   ● Collaboration│
-│  ● Tab layout           ● 7 narrative tabs      ● Reduced motion a11y   ● Multi-user   │
-│  ● Static metrics       ● Animated particles    ● Toast feedback        ● Custom curves│
-│  ● Flat bug list        ● Bestiary + Codex      ● Print CSS styles      ● Light theme  │
+│  ● Light theme   ● Dark void     ● ⌘K Palette            ● Celestial branding overhaul │
+│  ● M3 cards      ● Glassmorphism ● Keyboard shortcuts    ● Cosmic naming paradigm      │
+│  ● System fonts  ● Custom fonts  ● Sparklines & search   ● Nebula & Event Horizon      │
+│  ● Tab layout    ● 7 narrative   ● Reduced motion a11y   ● Integrated intelligence     │
+│  ● Static metrics● Particle flow ● Toast feedback        ● Solar core & Orion array    │
+│  ● Flat bugs list● Bestiary grid ● Print CSS styles      ● Fully built & optimized     │
 │                                                                                        │
-│  Status: SUPERSEDED     Status: SUPERSEDED      Status: ACTIVE          Status: PLANNED│
+│  Status: SUPER   Status: SUPER   Status: SUPERSEDED      Status: ACTIVE                │
 │                                                                                        │
 └────────────────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -275,7 +275,8 @@ This hybrid paradigm is designed directly into our code and UI:
 |-------|-----------|--------|--------|
 | Phase 1 | [DESIGN_PHASE_1.md](phases/phase-1-material3/DESIGN_PHASE_1.md) | [Mockup](phases/phase-1-material3/material3_dashboard_mockup.png) | Superseded |
 | Phase 2 | [DESIGN_PHASE_2.md](phases/phase-2-fable/DESIGN_PHASE_2.md) | [Mockup](phases/phase-2-fable/fable_dashboard_mockup.png) | Superseded |
-| Phase 3 | [DESIGN_PHASE_3.md](phases/phase-3-observatory/DESIGN_PHASE_3.md) | [Mockup](phases/phase-2-fable/fable_dashboard_mockup.png) | Active |
+| Phase 3 | [DESIGN_PHASE_3.md](phases/phase-3-observatory/DESIGN_PHASE_3.md) | [Mockup](phases/phase-2-fable/fable_dashboard_mockup.png) | Superseded |
+| Phase 4 | [DESIGN_PHASE_4.md](phases/phase-4-cosmos/DESIGN_PHASE_4.md) | [Mockup](phases/phase-4-cosmos/cosmos_dashboard_mockup.png) | Active |
 
 ---
 
@@ -286,35 +287,35 @@ This hybrid paradigm is designed directly into our code and UI:
 | Component | Type | Tab(s) Used In | Key Props |
 |-----------|------|----------------|-----------|
 | `Glass Card` | Container | All | padding, hover-glow, border-color |
-| `Metric Tile` | Data Display | Forge | label, value, trend, color-variant |
-| `Chapter Card` | Content | Chronicle | session data, expanded state |
-| `Bug Card` | Content | Bestiary | bug data, severity, expanded state |
-| `Codex Entry` | Content | Codex | title, date, text, quote, milestone |
-| `Service Card` | Interactive | Watchtower | service data, selected, toggle handler |
-| `Quarantine Record` | Interactive | Quarantine | record data, editing state, JSON editor |
-| `Stage Bar` | Data Display | Forge | name, value, max, color-class |
+| `Metric Tile` | Data Display | Solar Core | label, value, trend, color-variant |
+| `Chapter Card` | Content | Nebula | session data, expanded state |
+| `Bug Card` | Content | Asteroid Belt | bug data, severity, expanded state |
+| `Pulsar Entry` | Content | Pulsar Log | title, date, text, quote, milestone |
+| `Service Card` | Interactive | Orion Array | service data, selected, toggle handler |
+| `Event Horizon Record` | Interactive | Event Horizon | record data, editing state, JSON editor |
+| `Stage Bar` | Data Display | Solar Core | name, value, max, color-class |
 | `Flow Node` | Visual | Constellation | position, icon, label, class |
 | `Flow Particle` | Animation | Constellation | step, isBad |
-| `Terminal Feed` | Output | Forge | logs array, auto-scroll |
-| `DB Inspector` | Data Display | Forge | tables, active table, records |
+| `Terminal Feed` | Output | Solar Core | logs array, auto-scroll |
+| `DB Inspector` | Data Display | Solar Core | tables, active table, records |
 | `Nav Item` | Navigation | Sidebar | id, label, icon, badge, active |
-| `Toggle Switch` | Input | Watchtower | checked, onChange |
-| `Filter Chip` | Input | Bestiary | label, active, onClick |
-| `Severity Badge` | Label | Bestiary | severity level |
-| `Status Pill` | Label | Forge, Watchtower | status value |
-| `Chapter Tag` | Label | Chronicle | tag type (feature/bug/fix/perf) |
-| `Checklist Item` | Interactive | Watchtower | text, checked, onClick |
+| `Toggle Switch` | Input | Orion Array | checked, onChange |
+| `Filter Chip` | Input | Asteroid Belt | label, active, onClick |
+| `Severity Badge` | Label | Asteroid Belt | severity level |
+| `Status Pill` | Label | Solar Core, Orion Array | status value |
+| `Chapter Tag` | Label | Nebula | tag type (feature/bug/fix/perf) |
+| `Checklist Item` | Interactive | Orion Array | text, checked, onClick |
 | `Mode Pill` | Toggle | Top Bar | liveMode, onClick |
 
 ### Layout Components
 
 | Component | Description |
 |-----------|-------------|
-| `.fable-app` | CSS Grid root: `260px sidebar + 1fr workspace` |
-| `.fable-sidebar` | Flex column: brand → nav → footer |
-| `.fable-main` | Flex column: topbar → workspace (scrollable) |
-| `.fable-topbar` | Fixed header with tab title and mode controls |
-| `.fable-workspace` | Scrollable content area with 32px padding |
+| `.cosmos-app` | CSS Grid root: `260px sidebar + 1fr workspace` |
+| `.cosmos-sidebar` | Flex column: brand → nav → footer |
+| `.cosmos-main` | Flex column: topbar → workspace (scrollable) |
+| `.cosmos-topbar` | Fixed header with tab title and mode controls |
+| `.cosmos-workspace` | Scrollable content area with 32px padding |
 | `.two-col` | CSS Grid: `1fr 1fr` with 24px gap |
 | `.metrics-grid` | CSS Grid: `repeat(auto-fit, minmax(200px, 1fr))` |
 
@@ -363,7 +364,7 @@ Based on industry trends from Datadog, Linear, and Netflix, Phase 4 will focus o
 
 ### 4. Light/Dark Mode Toggle
 - Support for manual light/dark toggle and auto-detection based on system preference
-- Maintain the Fable aesthetic with tailored cream/amber light palette
+- Maintain the Cosmos aesthetic with tailored cream/gold light palette
 
 ---
 

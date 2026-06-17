@@ -1,7 +1,7 @@
 # 🚀 Multi-Agent Pipeline & React Monitor — E2E Walkthrough
 
 Welcome to the **Production-Ready Multi-Agent Data Engineering Pipeline**! 
-This project features a real-time event-streaming pipeline (polling Kafka, transforming, validating, and loading to a PostgreSQL Data Warehouse) monitored by a premium, cinematic **Fable Development Chronicle Dashboard** on port `5173`.
+This project features a real-time event-streaming pipeline (polling Kafka, transforming, validating, and loading to a PostgreSQL Data Warehouse) monitored by a premium, celestial-themed **Cosmos Development Chronicle Dashboard** on port `5173`.
 
 ---
 
@@ -67,27 +67,27 @@ If you prefer to run them from your terminal:
 
 ---
 
-## 🌐 2. Exposing the Fable & Observatory Dashboard
+## 🌐 2. Exposing the Cosmos Dashboard
 
 Once booted, the high-fidelity system monitor dashboard is served on **port `5173`**:
 👉 **Open your browser and navigate to**: **[http://localhost:5173](http://localhost:5173)**
 
 ### Key Features by Tab:
 
-1. **The Chronicle (Session Timeline)**:
-   * View all development sessions (Sessions 1–9) rendered as "chapters" on an animated vertical timeline.
+1. **The Nebula (Session History Timeline)**:
+   * View all development sessions (Sessions 1–9) rendered as nebula stages on an animated vertical timeline.
    * Expand each card to see the goals, activities, bugs found, and resolution details.
    * Includes a real-time Search Bar to filter sessions by title or description text.
 
-2. **The Bestiary (Bug & Error Tracker)**:
-   * Displays all pipeline issues as detailed beast cards (Critical, High, Medium, Low).
+2. **The Asteroid Belt (Errors & Bug Tracker)**:
+   * Displays all pipeline issues as detailed space-debris cards (Critical, High, Medium, Low).
    * Displays root cause analysis, fix narratives, code snippets, and lessons learned.
    * Features a search input and chip-based severity filter.
 
-3. **The Codex (Development Fable Log)**:
-   * Reads like a historical saga book. Contains pull quotes, major milestones, and error logs per session.
+3. **The Pulsar Log (Development Narrative Log)**:
+   * Reads like a periodic signal log book. Contains pull quotes, major milestones, and error logs per session.
 
-4. **The Forge (Live Pipeline Metrics)**:
+4. **The Solar Core (Live Pipeline Metrics & Telemetry)**:
    * Shows real-time counters (loaded records, throughput, quarantine rate, successful runs).
    * **Sparkline Mini-Charts**: Displays 20-point trailing history graphs for instant trend detection.
    * Includes controls to toggle simulation/live modes, speed, and anomaly rates.
@@ -96,11 +96,11 @@ Once booted, the high-fidelity system monitor dashboard is served on **port `517
 5. **The Constellation (Live Data Flow Canvas)**:
    * Particle canvas showing live database data flowing through agent orbs. Red particles show quarantined anomalies, green/blue represent clean records.
 
-6. **The Watchtower (System Topology)**:
+6. **The Orion Array (System Topology & Health)**:
    * Health panel showing status of all 13 services. Clicking cards expands system specs.
    * Interactive switches to stop/start services and simulate cascading network failures.
 
-7. **The Quarantine (Human-in-the-Loop Hub)**:
+7. **The Event Horizon (Anomaly Isolation Hub)**:
    * View and modify quarantined records using a dark code editor, and re-inject them into the pipeline.
 
 ---
@@ -132,7 +132,7 @@ The local ecosystem exposes the following active interfaces once bootstrapped:
 
 | Interface / Service | Local Port | URL |
 |---------------------|------------|-----|
-| **Fable Dashboard** | `5173` | [http://localhost:5173](http://localhost:5173) |
+| **Cosmos Dashboard** | `5173` | [http://localhost:5173](http://localhost:5173) |
 | **WebSocket Telemetry Server** | `8085` | `ws://localhost:8085/ws` (REST: `http://localhost:8085`) |
 | **Apache Airflow Web UI** | `8080` | [http://localhost:8080](http://localhost:8080) *(User: airflow / Pass: airflow)* |
 | **Grafana Analytics Charts** | `3000` | [http://localhost:3000](http://localhost:3000) *(User: admin / Pass: admin)* |

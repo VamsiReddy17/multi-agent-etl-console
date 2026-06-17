@@ -6,7 +6,7 @@
 [![Streaming](https://img.shields.io/badge/Kafka-7.4.0-black.svg)](https://kafka.apache.org/)
 [![Database](https://img.shields.io/badge/PostgreSQL-14-blue.svg)](https://www.postgresql.org/)
 
-A production-ready, high-throughput **Multi-Agent Data Engineering Pipeline** orchestrated by **Apache Airflow**, powered by **Apache Kafka**, and chronicled through a cinematic **Fable Development Dashboard** — a narrative-driven React UI that tells the story of every session, bug, and fix. 
+A production-ready, high-throughput **Multi-Agent Data Engineering Pipeline** orchestrated by **Apache Airflow**, powered by **Apache Kafka**, and chronicled through a premium **Cosmos Development Dashboard** — a celestial-themed React UI that tells the story of every session, bug, and fix. 
 
 This system coordinates four specialized agents working sequentially to ingest, transform, validate, and load real-time Kafka event streams into a PostgreSQL Data Warehouse.
 
@@ -58,10 +58,10 @@ sequenceDiagram
     deactivate Load
 ```
 
-### 3. The Fable — Development Chronicle Dashboard
-A cinematic, narrative-driven React.js single-page application presenting the entire development journey across **7 interactive views**: The Chronicle (session timeline), The Bestiary (bug tracker), The Codex (development narrative), The Forge (live metrics), The Constellation (animated data-flow canvas), The Watchtower (system topology), and The Quarantine (anomaly review hub).
+### 3. The Cosmos — Development Chronicle Dashboard
+A premium, celestial-themed React.js single-page application presenting the entire development journey across **7 interactive views**: The Nebula (session history timeline), The Asteroid Belt (errors & bug tracker), The Pulsar Log (narrative development log), The Solar Core (pipeline metrics & telemetry), The Constellation (live data flow canvas), The Orion Array (system topology & health), and The Event Horizon (anomaly isolation hub).
 
-![The Fable Dashboard](architecture/fable_dashboard_mockup.png)
+![The Cosmos Dashboard](design-ui/mockups/cosmos_dashboard_mockup.png)
 
 ---
 
@@ -152,7 +152,7 @@ multi-agent-etl-console/
 ├── architecture/ ................ E2E Architecture diagrams, flow definitions, and layout mockups
 ├── design-ui/ ................... UI/UX design system, phase docs, mockups, and industry research
 ├── docs/ ........................ Detailed Guides (Kafka setup, Airflow integrations, cloud scale)
-├── monitoring/ .................. Prometheus scrape rules, Grafana dashboards, and Fable React Dashboard
+├── monitoring/ .................. Prometheus scrape rules, Grafana dashboards, and Cosmos React Dashboard
 ├── pipelines/ ................... Core streaming orchestrators and pipeline configuration YAMLs
 ├── postgres/ .................... Pre-configured schemas, target tables, and local test mock datasets
 ├── scripts/ ..................... Bootstrapping, health-checking, and topic provisioning scripts
@@ -169,7 +169,7 @@ Once bootstrapped, your local development workspace exposes the following endpoi
 
 | Interface / Service | Local Port | URL | Description |
 |---------------------|------------|-----|-------------|
-| **Fable Dashboard** | `5173` | [http://localhost:5173](http://localhost:5173) | Cinematic development chronicle UI |
+| **Cosmos Dashboard** | `5173` | [http://localhost:5173](http://localhost:5173) | Premium cosmic development chronicle UI |
 | **Apache Airflow Web UI** | `8080` | [http://localhost:8080](http://localhost:8080) | DAG scheduling & loop logs (`airflow/airflow`) |
 | **Grafana Analytics** | `3000` | [http://localhost:3000](http://localhost:3000) | Live preloaded metrics charts (`admin/admin`) |
 | **Prometheus Telemetry** | `9090` | [http://localhost:9090](http://localhost:9090) | Target metrics scraper dashboard |
@@ -186,6 +186,6 @@ If you are developing this project using an AI coding agent, read **[AGENT_KNOWL
 
 ## 📜 Community & Support
 
-* Read **[FABLE.md](FABLE.md)** — the complete development narrative chronicle.
+* Read **[COSMOS.md](COSMOS.md)** — the complete development narrative chronicle.
 * Check out our **[CONTRIBUTING.md](CONTRIBUTING.md)** guidelines to start submitting code.
 * Refer to our **[SECURITY.md](SECURITY.md)** to report vulnerabilities.

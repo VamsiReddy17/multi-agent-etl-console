@@ -1,6 +1,6 @@
-# 🎭 The Fable
+# 🌌 The Cosmos
 
-> *A narrative chronicle of the Multi-Agent ETL Pipeline — from empty scaffold to 109,000+ rows at 1,000 messages per second.*
+> *A narrative chronicle of the Multi-Agent Cosmic Array — from empty scaffold to 109,000+ rows at 1,000 messages per second.*
 
 ---
 
@@ -230,20 +230,20 @@ The codebase was ready to leave the developer's machine. Before pushing to GitHu
 
 ---
 
-## Epilogue — The Fable Dashboard
+## Epilogue — The Cosmos Dashboard
 
 **Session 8 · June 13, 2026**
 
-The final chapter transformed the monitoring dashboard itself into a narrative experience. The Google Material 3 UI was replaced with a cinematic, dark-themed **Fable Dashboard** — presenting development sessions as chapters, bugs as bestiary entries, and the entire journey as a living codex.
+The final chapter transformed the monitoring dashboard itself into a narrative experience. The Google Material 3 UI was replaced with a premium, celestial-themed **Cosmos Dashboard** — presenting development sessions as nebula stages, bugs as asteroid belt entries, and the entire journey as a living pulsar log.
 
 Seven views tell the complete story:
-1. **The Chronicle** — Session timeline with scroll-reveal animations
-2. **The Bestiary** — Every bug with root cause analysis and lessons learned
-3. **The Codex** — The development narrative as a scrollable book
-4. **The Forge** — Live pipeline metrics with glass-morphism cards
+1. **The Nebula** — Session timeline with scroll-reveal animations
+2. **The Asteroid Belt** — Every bug with root cause analysis and lessons learned
+3. **The Pulsar Log** — The development narrative as a scrollable book
+4. **The Solar Core** — Live pipeline metrics with glass-morphism cards
 5. **The Constellation** — Animated particle data-flow canvas
-6. **The Watchtower** — System topology with interactive failure simulation
-7. **The Quarantine** — Human-in-the-loop anomaly review
+6. **The Orion Array** — System topology with interactive failure simulation
+7. **The Event Horizon** — Human-in-the-loop anomaly review
 
 > *"Every great system deserves a great story."*
 
@@ -287,4 +287,4 @@ Seven views tell the complete story:
 
 ---
 
-*This fable was authored during the development of the Multi-Agent ETL Console by Vamsi Reddy, chronicled by the Antigravity IDE.*
+*This chronicle was authored during the development of the Multi-Agent Cosmic Array by Vamsi Reddy, chronicled by the Antigravity IDE.*

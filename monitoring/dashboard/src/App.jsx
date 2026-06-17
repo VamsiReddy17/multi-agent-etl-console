@@ -267,9 +267,9 @@ const PRE_DEPLOY_CHECKLIST = [
 ];
 
 // ═══════════════════════════════════════════════════════════════════════════════
-//  DATA: Codex (Development Fable Entries)
+//  DATA: Pulsar Log (Development Saga Entries)
 // ═══════════════════════════════════════════════════════════════════════════════
-const CODEX_ENTRIES = [
+const PULSAR_ENTRIES = [
   {
     title: 'Prologue — The Empty Scaffold',
     date: 'Before Session 1',
@@ -332,15 +332,15 @@ const CODEX_ENTRIES = [
 //  MAIN APP COMPONENT
 // ═══════════════════════════════════════════════════════════════════════════════
 export default function App() {
-  const [activeTab, setActiveTab] = useState('chronicle');
+  const [activeTab, setActiveTab] = useState('nebula');
   const [liveMode, setLiveMode] = useState(false);
   const [components, setComponents] = useState(INITIAL_COMPONENTS);
   const [selectedComp, setSelectedComp] = useState(INITIAL_COMPONENTS[0]);
 
-  // Chronicle expanded chapter
+  // Nebula expanded chapter
   const [expandedChapter, setExpandedChapter] = useState(null);
 
-  // Bestiary filter
+  // Asteroid filter
   const [bugFilter, setBugFilter] = useState('ALL');
   const [expandedBug, setExpandedBug] = useState(null);
 
@@ -430,8 +430,8 @@ export default function App() {
   });
 
   // Search filters
-  const [chronicleSearch, setChronicleSearch] = useState('');
-  const [bestiarySearch, setBestiarySearch] = useState('');
+  const [nebulaSearch, setNebulaSearch] = useState('');
+  const [asteroidSearch, setAsteroidSearch] = useState('');
 
   // Toast helper
   const addToast = useCallback((type, text) => {
@@ -608,7 +608,16 @@ export default function App() {
 
   // Keyboard shortcuts
   useEffect(() => {
-    const tabKeys = ['chronicle', 'bestiary', 'codex', 'forge', 'constellation', 'watchtower', 'quarantine'];
+    const tabKeys = ['nebula', 'asteroid', 'pulsar', 'solar', 'constellation', 'orion', 'horizon'];
+    const labels = {
+      nebula: 'The Nebula (Session Timeline)',
+      asteroid: 'The Asteroid Belt (Bug Tracker)',
+      pulsar: 'The Pulsar Log (Development Log)',
+      solar: 'The Solar Core (Pipeline Metrics)',
+      constellation: 'The Constellation (Data Flow Canvas)',
+      orion: 'The Orion Array (System Topology)',
+      horizon: 'The Event Horizon (Anomaly Hub)'
+    };
     const handler = (e) => {
       // Cmd+K or Ctrl+K
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -626,7 +635,7 @@ export default function App() {
         const num = parseInt(e.key);
         if (num >= 1 && num <= 7) {
           setActiveTab(tabKeys[num - 1]);
-          addToast('info', `Switched to ${tabKeys[num - 1].charAt(0).toUpperCase() + tabKeys[num - 1].slice(1)}`);
+          addToast('info', `Switched to ${labels[tabKeys[num - 1]]}`);
         }
       }
     };
@@ -638,13 +647,13 @@ export default function App() {
   const cmdItems = [
     // Tabs
     ...[
-      { id: 'chronicle', name: 'The Chronicle', sub: 'Session Timeline', icon: BookOpen },
-      { id: 'bestiary', name: 'The Bestiary', sub: 'Bug Tracker', icon: Bug },
-      { id: 'codex', name: 'The Codex', sub: 'Development Log', icon: Award },
-      { id: 'forge', name: 'The Forge', sub: 'Pipeline Metrics', icon: Activity },
+      { id: 'nebula', name: 'The Nebula', sub: 'Session Timeline', icon: BookOpen },
+      { id: 'asteroid', name: 'The Asteroid Belt', sub: 'Bug Tracker', icon: Bug },
+      { id: 'pulsar', name: 'The Pulsar Log', sub: 'Development Log', icon: Award },
+      { id: 'solar', name: 'The Solar Core', sub: 'Pipeline Metrics', icon: Activity },
       { id: 'constellation', name: 'The Constellation', sub: 'Data Flow Canvas', icon: Layers },
-      { id: 'watchtower', name: 'The Watchtower', sub: 'System Topology', icon: Eye },
-      { id: 'quarantine', name: 'The Quarantine', sub: 'Anomaly Hub', icon: AlertTriangle },
+      { id: 'orion', name: 'The Orion Array', sub: 'System Topology', icon: Eye },
+      { id: 'horizon', name: 'The Event Horizon', sub: 'Anomaly Hub', icon: AlertTriangle },
     ].map((item, i) => ({
       type: 'tab', id: item.id, label: `Go to ${item.name} (${item.sub})`, shortcut: `${i + 1}`, icon: item.icon
     })),
@@ -668,9 +677,9 @@ export default function App() {
     if (item.type === 'tab') { setActiveTab(item.id); addToast('info', `Navigated to ${item.label.replace('Go to ', '')}`); }
     else if (item.type === 'action' && item.id === 'toggle-sim') { setIsGenerating(p => !p); addToast('info', isGenerating ? 'Simulation paused' : 'Simulation resumed'); }
     else if (item.type === 'action' && item.id === 'toggle-live') { setLiveMode(p => !p); addToast('info', liveMode ? 'Switched to Simulation' : 'Switched to Live'); }
-    else if (item.type === 'session') { setActiveTab('chronicle'); setExpandedChapter(parseInt(item.id.split('-')[1])); addToast('info', `Opened ${item.label}`); }
-    else if (item.type === 'bug') { setActiveTab('bestiary'); setExpandedBug(item.id); addToast('info', `Opened ${item.id}`); }
-    else if (item.type === 'service') { setActiveTab('watchtower'); setSelectedComp(INITIAL_COMPONENTS.find(c => c.id === item.id)); addToast('info', `Viewing ${item.label}`); }
+    else if (item.type === 'session') { setActiveTab('nebula'); setExpandedChapter(parseInt(item.id.split('-')[1])); addToast('info', `Opened ${item.label}`); }
+    else if (item.type === 'bug') { setActiveTab('asteroid'); setExpandedBug(item.id); addToast('info', `Opened ${item.id}`); }
+    else if (item.type === 'service') { setActiveTab('orion'); setSelectedComp(INITIAL_COMPONENTS.find(c => c.id === item.id)); addToast('info', `Viewing ${item.label}`); }
   };
 
   // Compute system health
@@ -679,10 +688,10 @@ export default function App() {
 
   // Filtered bugs (with search)
   const filteredBugs = (bugFilter === 'ALL' ? BUGS : BUGS.filter(b => b.severity === bugFilter))
-    .filter(b => bestiarySearch === '' || b.title.toLowerCase().includes(bestiarySearch.toLowerCase()) || b.description.toLowerCase().includes(bestiarySearch.toLowerCase()));
+    .filter(b => asteroidSearch === '' || b.title.toLowerCase().includes(asteroidSearch.toLowerCase()) || b.description.toLowerCase().includes(asteroidSearch.toLowerCase()));
 
   // Filtered sessions (with search)
-  const filteredSessions = SESSIONS.filter(s => chronicleSearch === '' || s.title.toLowerCase().includes(chronicleSearch.toLowerCase()) || s.summary.toLowerCase().includes(chronicleSearch.toLowerCase()));
+  const filteredSessions = SESSIONS.filter(s => nebulaSearch === '' || s.title.toLowerCase().includes(nebulaSearch.toLowerCase()) || s.summary.toLowerCase().includes(nebulaSearch.toLowerCase()));
 
   // Node positions for constellation
   const nodePositions = [
@@ -698,29 +707,29 @@ export default function App() {
   // ═════════════════════════════════════════════════════════════════════════════
   const navItems = [
     { section: 'NARRATIVE' },
-    { id: 'chronicle', label: 'The Chronicle', subtitle: 'Session Timeline', icon: <BookOpen size={18} />, kbd: '1' },
-    { id: 'bestiary', label: 'The Bestiary', subtitle: 'Bug Tracker', icon: <Bug size={18} />, badge: BUGS.length, kbd: '2' },
-    { id: 'codex', label: 'The Codex', subtitle: 'Development Log', icon: <Award size={18} />, kbd: '3' },
+    { id: 'nebula', label: 'The Nebula', subtitle: 'Session Timeline', icon: <BookOpen size={18} />, kbd: '1' },
+    { id: 'asteroid', label: 'The Asteroid Belt', subtitle: 'Bug Tracker', icon: <Bug size={18} />, badge: BUGS.length, kbd: '2' },
+    { id: 'pulsar', label: 'The Pulsar Log', subtitle: 'Development Log', icon: <Award size={18} />, kbd: '3' },
     { section: 'OPERATIONS' },
-    { id: 'forge', label: 'The Forge', subtitle: 'Pipeline Metrics', icon: <Activity size={18} />, kbd: '4' },
+    { id: 'solar', label: 'The Solar Core', subtitle: 'Pipeline Metrics', icon: <Activity size={18} />, kbd: '4' },
     { id: 'constellation', label: 'The Constellation', subtitle: 'Data Flow Canvas', icon: <Layers size={18} />, kbd: '5' },
-    { id: 'watchtower', label: 'The Watchtower', subtitle: 'System Topology', icon: <Eye size={18} />, kbd: '6' },
-    { id: 'quarantine', label: 'The Quarantine', subtitle: 'Anomaly Hub', icon: <AlertTriangle size={18} />, badge: quarantineRecords.length, kbd: '7' },
+    { id: 'orion', label: 'The Orion Array', subtitle: 'System Topology', icon: <Eye size={18} />, kbd: '6' },
+    { id: 'horizon', label: 'The Event Horizon', subtitle: 'Anomaly Hub', icon: <AlertTriangle size={18} />, badge: quarantineRecords.length, kbd: '7' },
   ];
 
   // ═════════════════════════════════════════════════════════════════════════════
   //  RENDER
   // ═════════════════════════════════════════════════════════════════════════════
   return (
-    <div className="fable-app">
+    <div className="cosmos-app">
       {/* ──── SIDEBAR ──── */}
-      <aside className="fable-sidebar">
+      <aside className="cosmos-sidebar">
         <div className="sidebar-brand">
           <div className="brand-icon">
             <Zap size={20} color="white" />
           </div>
-          <div className="brand-title">The Fable</div>
-          <div className="brand-subtitle">Multi-Agent ETL Chronicle</div>
+          <div className="brand-title">The Cosmos</div>
+          <div className="brand-subtitle">Multi-Agent Cosmic Array</div>
         </div>
 
         <nav className="sidebar-nav">
@@ -761,30 +770,30 @@ export default function App() {
       </aside>
 
       {/* ──── MAIN ──── */}
-      <main className="fable-main">
-        <header className="fable-topbar">
+      <main className="cosmos-main">
+        <header className="cosmos-topbar">
           <div className="topbar-title">
-            {activeTab === 'chronicle' && (
+            {activeTab === 'nebula' && (
               <>
-                <span>📜 The Chronicle</span>
+                <span>🌌 The Nebula</span>
                 <span className="topbar-subtitle">Session Timeline</span>
               </>
             )}
-            {activeTab === 'bestiary' && (
+            {activeTab === 'asteroid' && (
               <>
-                <span>🐛 The Bestiary</span>
+                <span>☄️ The Asteroid Belt</span>
                 <span className="topbar-subtitle">Errors & Bug Tracker</span>
               </>
             )}
-            {activeTab === 'codex' && (
+            {activeTab === 'pulsar' && (
               <>
-                <span>📖 The Codex</span>
+                <span>📡 The Pulsar Log</span>
                 <span className="topbar-subtitle">Development Saga</span>
               </>
             )}
-            {activeTab === 'forge' && (
+            {activeTab === 'solar' && (
               <>
-                <span>⚡ The Forge</span>
+                <span>☀️ The Solar Core</span>
                 <span className="topbar-subtitle">Pipeline Metrics</span>
               </>
             )}
@@ -794,15 +803,15 @@ export default function App() {
                 <span className="topbar-subtitle">Data Flow Canvas</span>
               </>
             )}
-            {activeTab === 'watchtower' && (
+            {activeTab === 'orion' && (
               <>
-                <span>🗼 The Watchtower</span>
+                <span>🛰️ The Orion Array</span>
                 <span className="topbar-subtitle">System Topology & Health</span>
               </>
             )}
-            {activeTab === 'quarantine' && (
+            {activeTab === 'horizon' && (
               <>
-                <span>🔒 The Quarantine</span>
+                <span>🪐 The Event Horizon</span>
                 <span className="topbar-subtitle">Anomaly Isolation Hub</span>
               </>
             )}
@@ -827,34 +836,34 @@ export default function App() {
           </div>
         </header>
 
-        <div className="fable-workspace">
+        <div className="cosmos-workspace">
 
           {/* ════════════════════════════════════════════════════════════════════
-              TAB 1: THE CHRONICLE
+              TAB 1: THE NEBULA
           ════════════════════════════════════════════════════════════════════ */}
-          {activeTab === 'chronicle' && (
+          {activeTab === 'nebula' && (
             <>
-              <div className="chronicle-hero">
-                <h1>The Chronicle</h1>
+              <div className="nebula-hero">
+                <h1>The Nebula</h1>
                 <p>
-                  Every session of the Multi-Agent ETL Pipeline, told as chapters in a development saga — from empty scaffold to 109,000+ rows at 1,000 msg/s.
+                  Every session of the Multi-Agent ETL Pipeline, told as chapters in a cosmic saga — from empty scaffold to 109,000+ rows at 1,000 msg/s.
                 </p>
-                <div className="chronicle-stats">
-                  <div className="chronicle-stat">
-                    <div className="chronicle-stat-value">7</div>
-                    <div className="chronicle-stat-label">Sessions</div>
+                <div className="nebula-stats">
+                  <div className="nebula-stat">
+                    <div className="nebula-stat-value">7</div>
+                    <div className="nebula-stat-label">Sessions</div>
                   </div>
-                  <div className="chronicle-stat">
-                    <div className="chronicle-stat-value">9</div>
-                    <div className="chronicle-stat-label">Bugs Fixed</div>
+                  <div className="nebula-stat">
+                    <div className="nebula-stat-value">9</div>
+                    <div className="nebula-stat-label">Bugs Fixed</div>
                   </div>
-                  <div className="chronicle-stat">
-                    <div className="chronicle-stat-value">109K+</div>
-                    <div className="chronicle-stat-label">Rows Loaded</div>
+                  <div className="nebula-stat">
+                    <div className="nebula-stat-value">109K+</div>
+                    <div className="nebula-stat-label">Rows Loaded</div>
                   </div>
-                  <div className="chronicle-stat">
-                    <div className="chronicle-stat-value">33</div>
-                    <div className="chronicle-stat-label">Tests Passing</div>
+                  <div className="nebula-stat">
+                    <div className="nebula-stat-value">33</div>
+                    <div className="nebula-stat-label">Tests Passing</div>
                   </div>
                 </div>
               </div>
@@ -863,8 +872,8 @@ export default function App() {
                 <Search size={16} />
                 <input
                   placeholder="Search sessions by title or summary..."
-                  value={chronicleSearch}
-                  onChange={e => setChronicleSearch(e.target.value)}
+                  value={nebulaSearch}
+                  onChange={e => setNebulaSearch(e.target.value)}
                 />
               </div>
 
@@ -933,26 +942,26 @@ export default function App() {
           )}
 
           {/* ════════════════════════════════════════════════════════════════════
-              TAB 2: THE BESTIARY
+              TAB 2: THE ASTEROID BELT
           ════════════════════════════════════════════════════════════════════ */}
-          {activeTab === 'bestiary' && (
+          {activeTab === 'asteroid' && (
             <>
-              <div className="bestiary-header">
-                <h2>The Bestiary</h2>
-                <p>Every bug encountered, diagnosed, and conquered — with root cause analysis, fixes, and lessons learned.</p>
+              <div className="asteroid-header">
+                <h2>The Asteroid Belt</h2>
+                <p>Space debris and system hazards encountered, diagnosed, and vaporized — with root cause analysis, fixes, and lessons learned.</p>
               </div>
-              <div className="bestiary-filters">
+              <div className="asteroid-filters">
                 <div className="search-bar" style={{ marginBottom: 12, flex: 1 }}>
                   <Search size={16} />
                   <input
                     placeholder="Search bugs by title or description..."
-                    value={bestiarySearch}
-                    onChange={e => setBestiarySearch(e.target.value)}
+                    value={asteroidSearch}
+                    onChange={e => setAsteroidSearch(e.target.value)}
                   />
                 </div>
               </div>
 
-              <div className="bestiary-filters">
+              <div className="asteroid-filters">
                 {['ALL', 'CRITICAL', 'HIGH', 'MEDIUM', 'LOW'].map(f => (
                   <button
                     key={f}
@@ -964,7 +973,7 @@ export default function App() {
                 ))}
               </div>
 
-              <div className="bestiary-grid">
+              <div className="asteroid-grid">
                 {filteredBugs.map(bug => (
                   <div
                     key={bug.id}
@@ -1012,13 +1021,13 @@ export default function App() {
           )}
 
           {/* ════════════════════════════════════════════════════════════════════
-              TAB 3: THE FORGE (Live Metrics)
+              TAB 3: THE SOLAR CORE (Live Metrics)
           ════════════════════════════════════════════════════════════════════ */}
-          {activeTab === 'forge' && (
+          {activeTab === 'solar' && (
             <>
               <div className="section-head">
-                <h2>The Forge</h2>
-                <p>Real-time pipeline performance metrics, throughput rates, and stage execution durations.</p>
+                <h2>The Solar Core</h2>
+                <p>Real-time stellar telemetry, core fusion rates, and agent metrics.</p>
               </div>
 
               {/* Metrics Grid */}
@@ -1297,17 +1306,17 @@ export default function App() {
           )}
 
           {/* ════════════════════════════════════════════════════════════════════
-              TAB 5: THE WATCHTOWER (System Topology)
+              TAB 5: THE ORION ARRAY (System Topology)
           ════════════════════════════════════════════════════════════════════ */}
-          {activeTab === 'watchtower' && (
+          {activeTab === 'orion' && (
             <>
               <div className="section-head">
-                <h2>The Watchtower</h2>
-                <p>Monitor all {components.length} services. Toggle switches to simulate failures and observe cascading effects.</p>
+                <h2>The Orion Array</h2>
+                <p>Monitor all {components.length} microservices. Toggle switches to simulate connection failures and observe cascading array events.</p>
               </div>
 
               <div className="two-col">
-                <div className="watchtower-grid">
+                <div className="orion-grid">
                   {components.map(comp => (
                     <div
                       key={comp.id}
@@ -1388,18 +1397,18 @@ export default function App() {
           )}
 
           {/* ════════════════════════════════════════════════════════════════════
-              TAB 6: THE QUARANTINE
+              TAB 6: THE EVENT HORIZON
           ════════════════════════════════════════════════════════════════════ */}
-          {activeTab === 'quarantine' && (
+          {activeTab === 'horizon' && (
             <>
               <div className="section-head">
-                <h2>The Quarantine</h2>
-                <p>Records flagged by the Quality Validation Agent. Review, edit JSON payloads, and approve or reject reprocessing.</p>
+                <h2>The Event Horizon</h2>
+                <p>Records caught by the Quality Agent's gravity threshold. Review, edit JSON payloads, and approve or reject reprocessing.</p>
               </div>
 
-              <div className="quarantine-grid">
+              <div className="horizon-grid">
                 {quarantineRecords.map(rec => (
-                  <div key={rec.id} className="quarantine-record">
+                  <div key={rec.id} className="horizon-record">
                     <div className="qr-header">
                       <span className="qr-id">{rec.id}</span>
                       <span className="qr-time">{rec.timestamp}</span>
@@ -1471,23 +1480,23 @@ export default function App() {
           )}
 
           {/* ════════════════════════════════════════════════════════════════════
-              TAB 7: THE CODEX (Development Fable)
+              TAB 7: THE PULSAR LOG (Development Saga)
           ════════════════════════════════════════════════════════════════════ */}
-          {activeTab === 'codex' && (
-            <div className="codex-page">
-              <div className="codex-header">
-                <h2>The Codex</h2>
-                <p>"A living record of every decision, discovery, and lesson from the forge."</p>
+          {activeTab === 'pulsar' && (
+            <div className="pulsar-page">
+              <div className="pulsar-header">
+                <h2>The Pulsar Log</h2>
+                <p>"A living record of every decision, discovery, and lesson from deep space."</p>
               </div>
 
-              {CODEX_ENTRIES.map((entry, i) => (
-                <div key={i} className="codex-entry">
-                  <div className="codex-entry-title">{entry.title}</div>
-                  <div className="codex-entry-date">{entry.date}</div>
-                  <div className="codex-text">{entry.text}</div>
-                  {entry.quote && <div className="codex-quote">{entry.quote}</div>}
+              {PULSAR_ENTRIES.map((entry, i) => (
+                <div key={i} className="pulsar-entry">
+                  <div className="pulsar-entry-title">{entry.title}</div>
+                  <div className="pulsar-entry-date">{entry.date}</div>
+                  <div className="pulsar-text">{entry.text}</div>
+                  {entry.quote && <div className="pulsar-quote">{entry.quote}</div>}
                   {entry.milestone && (
-                    <div className="codex-milestone">
+                    <div className="pulsar-milestone">
                       <Award size={14} /> {entry.milestone}
                     </div>
                   )}

@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════════════════════
-   THE FABLE — Design System
-   A cinematic, narrative-driven aesthetic for the Multi-Agent ETL Chronicle
+   THE COSMOS — Design System
+   A celestial, narrative-driven aesthetic for the Multi-Agent Cosmic Array
    ═══════════════════════════════════════════════════════════════════════════════ */
 
 /* ── 1. Design Tokens ────────────────────────────────────────────────────────── */
@@ -14,24 +14,43 @@
   --charcoal:       #22223a;
   --steel:          #2a2a44;
 
-  /* Accent Colors */
-  --amber:          #f59e0b;
-  --amber-glow:     #fbbf24;
-  --amber-dim:      rgba(245, 158, 11, 0.15);
-  --amber-border:   rgba(245, 158, 11, 0.25);
-  --emerald:        #10b981;
-  --emerald-glow:   #34d399;
-  --emerald-dim:    rgba(16, 185, 129, 0.12);
-  --crimson:        #ef4444;
-  --crimson-glow:   #f87171;
-  --crimson-dim:    rgba(239, 68, 68, 0.12);
-  --sapphire:       #3b82f6;
-  --sapphire-glow:  #60a5fa;
-  --sapphire-dim:   rgba(59, 130, 246, 0.12);
-  --violet:         #8b5cf6;
-  --violet-glow:    #a78bfa;
-  --violet-dim:     rgba(139, 92, 246, 0.12);
-  --rose:           #ec4899;
+  /* Accent Colors (Cosmic Theme Names) */
+  --solar:          #f59e0b; /* Solar Gold */
+  --solar-glow:     #fbbf24;
+  --solar-dim:      rgba(245, 158, 11, 0.15);
+  --solar-border:   rgba(245, 158, 11, 0.25);
+  --aurora:         #10b981; /* Aurora Green */
+  --aurora-glow:   #34d399;
+  --aurora-dim:    rgba(16, 185, 129, 0.12);
+  --supernova:      #ef4444; /* Supernova Red */
+  --supernova-glow: #f87171;
+  --supernova-dim:  rgba(239, 68, 68, 0.12);
+  --nebula-color:   #3b82f6; /* Nebula Blue (renamed from sapphire to avoid name clash with tab Nebula) */
+  --nebula-glow:    #60a5fa;
+  --nebula-dim:     rgba(59, 130, 246, 0.12);
+  --pulsar-color:   #8b5cf6; /* Pulsar Violet */
+  --pulsar-glow:    #a78bfa;
+  --pulsar-dim:     rgba(139, 92, 246, 0.12);
+  --corona:         #ec4899; /* Corona Pink */
+
+  /* Legacy variables for compatibility */
+  --amber: var(--solar);
+  --amber-glow: var(--solar-glow);
+  --amber-dim: var(--solar-dim);
+  --amber-border: var(--solar-border);
+  --emerald: var(--aurora);
+  --emerald-glow: var(--aurora-glow);
+  --emerald-dim: var(--aurora-dim);
+  --crimson: var(--supernova);
+  --crimson-glow: var(--supernova-glow);
+  --crimson-dim: var(--supernova-dim);
+  --sapphire: var(--nebula-color);
+  --sapphire-glow: var(--nebula-glow);
+  --sapphire-dim: var(--nebula-dim);
+  --violet: var(--pulsar-color);
+  --violet-glow: var(--pulsar-glow);
+  --violet-dim: var(--pulsar-dim);
+  --rose: var(--corona);
 
   /* Text */
   --text-primary:   #e8e6e3;
@@ -113,7 +132,7 @@ body {
 }
 
 /* ── 4. App Shell Layout ─────────────────────────────────────────────────────── */
-.fable-app {
+.cosmos-app {
   display: grid;
   grid-template-columns: 260px 1fr;
   height: 100vh;
@@ -123,7 +142,7 @@ body {
 }
 
 /* ── 5. Sidebar Navigation ───────────────────────────────────────────────────── */
-.fable-sidebar {
+.cosmos-sidebar {
   background: linear-gradient(180deg, var(--midnight) 0%, var(--obsidian) 100%);
   border-right: 1px solid var(--glass-border);
   display: flex;
@@ -132,7 +151,7 @@ body {
   position: relative;
 }
 
-.fable-sidebar::after {
+.cosmos-sidebar::after {
   content: '';
   position: absolute;
   top: 0;
@@ -283,7 +302,7 @@ body {
 .status-orb.critical { background: var(--crimson); box-shadow: 0 0 8px var(--crimson); }
 
 /* ── 6. Main Content Area ────────────────────────────────────────────────────── */
-.fable-main {
+.cosmos-main {
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -291,7 +310,7 @@ body {
 }
 
 /* Top Bar */
-.fable-topbar {
+.cosmos-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -356,7 +375,7 @@ body {
 }
 
 /* Workspace Content */
-.fable-workspace {
+.cosmos-workspace {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
@@ -391,12 +410,12 @@ body {
 }
 
 /* ── 8. Chapter / Timeline ───────────────────────────────────────────────────── */
-.chronicle-hero {
+.nebula-hero {
   text-align: center;
   padding: 48px 0 40px;
 }
 
-.chronicle-hero h1 {
+.nebula-hero h1 {
   font-family: var(--font-display);
   font-size: 2.8rem;
   font-weight: 700;
@@ -408,7 +427,7 @@ body {
   letter-spacing: -0.02em;
 }
 
-.chronicle-hero p {
+.nebula-hero p {
   font-size: 1.05rem;
   color: var(--text-secondary);
   max-width: 600px;
@@ -416,25 +435,25 @@ body {
   line-height: 1.7;
 }
 
-.chronicle-stats {
+.nebula-stats {
   display: flex;
   justify-content: center;
   gap: 40px;
   margin-top: 28px;
 }
 
-.chronicle-stat {
+.nebula-stat {
   text-align: center;
 }
 
-.chronicle-stat-value {
+.nebula-stat-value {
   font-family: var(--font-mono);
   font-size: 1.6rem;
   font-weight: 600;
   color: var(--amber);
 }
 
-.chronicle-stat-label {
+.nebula-stat-label {
   font-size: 0.72rem;
   color: var(--text-muted);
   text-transform: uppercase;
@@ -606,12 +625,12 @@ body {
   font-weight: 700;
 }
 
-/* ── 9. Bestiary (Bug Tracker) ───────────────────────────────────────────────── */
-.bestiary-header {
+/* ── 9. Asteroid Belt (Bug Tracker) ───────────────────────────────────────────────── */
+.asteroid-header {
   margin-bottom: 28px;
 }
 
-.bestiary-header h2 {
+.asteroid-header h2 {
   font-family: var(--font-display);
   font-size: 2rem;
   font-weight: 700;
@@ -619,12 +638,12 @@ body {
   margin-bottom: 8px;
 }
 
-.bestiary-header p {
+.asteroid-header p {
   color: var(--text-secondary);
   font-size: 0.92rem;
 }
 
-.bestiary-filters {
+.asteroid-filters {
   display: flex;
   gap: 8px;
   margin-bottom: 24px;
@@ -654,7 +673,7 @@ body {
   color: var(--amber);
 }
 
-.bestiary-grid {
+.asteroid-grid {
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -798,12 +817,12 @@ body {
   gap: 4px;
 }
 
-/* ── 10. The Forge (Metrics) ─────────────────────────────────────────────────── */
-.forge-header {
+/* ── 10. The Solar Core (Metrics) ─────────────────────────────────────────────────── */
+.solar-header {
   margin-bottom: 28px;
 }
 
-.forge-header h2 {
+.solar-header h2 {
   font-family: var(--font-display);
   font-size: 2rem;
   font-weight: 700;
@@ -1132,14 +1151,14 @@ body {
   background: white;
 }
 
-/* ── 13. Quarantine Hub ──────────────────────────────────────────────────────── */
-.quarantine-grid {
+/* ── 13. Event Horizon (Anomaly Hub) ────────────────────────────────────────── */
+.horizon-grid {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
 
-.quarantine-record {
+.horizon-record {
   background: var(--glass-bg);
   border: 1px solid var(--glass-border);
   border-left: 3px solid var(--crimson);
@@ -1148,7 +1167,7 @@ body {
   transition: all 0.3s var(--ease-out);
 }
 
-.quarantine-record:hover {
+.horizon-record:hover {
   border-color: rgba(255, 255, 255, 0.1);
   border-left-color: var(--crimson);
 }
@@ -1260,18 +1279,18 @@ body {
   margin-top: 4px;
 }
 
-/* ── 14. The Codex (Fable Log) ───────────────────────────────────────────────── */
-.codex-page {
+/* ── 14. The Pulsar Log (Development Saga) ──────────────────────────────────── */
+.pulsar-page {
   max-width: 800px;
   margin: 0 auto;
 }
 
-.codex-header {
+.pulsar-header {
   text-align: center;
   padding: 40px 0 32px;
 }
 
-.codex-header h2 {
+.pulsar-header h2 {
   font-family: var(--font-display);
   font-size: 2.4rem;
   font-weight: 700;
@@ -1279,19 +1298,19 @@ body {
   margin-bottom: 8px;
 }
 
-.codex-header p {
+.pulsar-header p {
   color: var(--text-secondary);
   font-size: 0.92rem;
   font-style: italic;
 }
 
-.codex-entry {
+.pulsar-entry {
   margin-bottom: 36px;
   padding-bottom: 36px;
   border-bottom: 1px solid var(--glass-border);
 }
 
-.codex-entry-title {
+.pulsar-entry-title {
   font-family: var(--font-display);
   font-size: 1.4rem;
   font-weight: 600;
@@ -1299,20 +1318,20 @@ body {
   margin-bottom: 6px;
 }
 
-.codex-entry-date {
+.pulsar-entry-date {
   font-family: var(--font-mono);
   font-size: 0.75rem;
   color: var(--text-muted);
   margin-bottom: 14px;
 }
 
-.codex-text {
+.pulsar-text {
   font-size: 0.9rem;
   color: var(--text-secondary);
   line-height: 1.8;
 }
 
-.codex-quote {
+.pulsar-quote {
   border-left: 3px solid var(--amber);
   padding: 12px 20px;
   margin: 16px 0;
@@ -1323,7 +1342,7 @@ body {
   font-size: 0.88rem;
 }
 
-.codex-milestone {
+.pulsar-milestone {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1720,19 +1739,19 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 @media (max-width: 768px) {
-  .fable-app {
+  .cosmos-app {
     grid-template-columns: 1fr;
   }
-  .fable-sidebar {
+  .cosmos-sidebar {
     display: none;
   }
   .metrics-grid {
     grid-template-columns: 1fr;
   }
-  .chronicle-hero h1 {
+  .nebula-hero h1 {
     font-size: 1.8rem;
   }
-  .fable-workspace {
+  .cosmos-workspace {
     padding: 16px;
   }
 }
@@ -1995,7 +2014,7 @@ input[type="range"]::-webkit-slider-thumb {
   transition: opacity 200ms ease;
 }
 
-.fable-sidebar:hover .nav-item .kbd-hint {
+.cosmos-sidebar:hover .nav-item .kbd-hint {
   opacity: 1;
 }
 
@@ -2078,18 +2097,18 @@ input[type="range"]::-webkit-slider-thumb {
 
 /* ── 31. Print Styles ────────────────────────────────────────────────────────── */
 @media print {
-  .fable-sidebar,
-  .fable-topbar,
+  .cosmos-sidebar,
+  .cosmos-topbar,
   .toast-container,
   .cmd-palette-overlay {
     display: none !important;
   }
 
-  .fable-app {
+  .cosmos-app {
     grid-template-columns: 1fr;
   }
 
-  body, .fable-app, .fable-workspace {
+  body, .cosmos-app, .cosmos-workspace {
     background: white;
     color: black;
     height: auto;
