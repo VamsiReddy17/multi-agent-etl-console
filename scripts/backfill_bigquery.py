@@ -82,12 +82,11 @@ def backfill():
         print(f"Failed to connect to PostgreSQL: {e}")
         sys.exit(1)
         
-    # Initialize GCP Clients
+    # Initialize GCP Client
     try:
-        storage_client = storage.Client(project=gcp_project)
         bq_client = bigquery.Client(project=gcp_project)
     except Exception as e:
-        print(f"Failed to initialize GCP clients: {e}")
+        print(f"Failed to initialize GCP client: {e}")
         print("Please check your Application Default Credentials (ADC) auth status.")
         pg_conn.close()
         sys.exit(1)
@@ -138,12 +137,7 @@ def backfill():
         table = bigquery.Table(table_ref, schema=schema)
         bq_client.create_table(table)
         
-    # Retrieve GCS bucket
-    try:
-        bucket = storage_client.get_bucket(gcs_bucket_name)
-    except Exception:
-        print(f"Bucket '{gcs_bucket_name}' not found. Creating it...")
-        bucket = storage_client.create_bucket(gcs_bucket_name, location="US")
+    # GCS staging bucket is bypassed to support Sandbox accounts without billing
         
     batch_num = 1
     while offset < total_rows:
@@ -179,22 +173,16 @@ def backfill():
             temp_file.write(json.dumps(record) + "\n")
         temp_file.close()
         
-        # 3. Upload file to GCS
-        gcs_key = f"backfills/order_events/batch_{batch_num}.json"
-        blob = bucket.blob(gcs_key)
-        blob.upload_from_filename(temp_file.name)
-        print(f"   Staged batch in GCS: gs://{gcs_bucket_name}/{gcs_key}")
+        # 3. Load directly to BigQuery from local temp file
+        with open(temp_file.name, "rb") as source_file:
+            job_config = bigquery.LoadJobConfig(
+                source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
+                write_disposition=bigquery.WriteDisposition.WRITE_APPEND
+            )
+            load_job = bq_client.load_table_from_file(source_file, table_ref, job_config=job_config)
+            load_job.result()  # Wait for job execution
         
-        # 4. Trigger BigQuery Load Job
-        job_config = bigquery.LoadJobConfig(
-            source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
-            write_disposition=bigquery.WriteDisposition.WRITE_APPEND
-        )
-        uri = f"gs://{gcs_bucket_name}/{gcs_key}"
-        load_job = bq_client.load_table_from_uri(uri, table_ref, job_config=job_config)
-        load_job.result()  # Wait for job execution
-        
-        print(f"   Successfully loaded batch #{batch_num} ({len(rows)} rows) to BigQuery.")
+        print(f"   Successfully loaded batch #{batch_num} ({len(rows)} rows) directly to BigQuery.")
         
         # Cleanup temporary local file
         if os.path.exists(temp_file.name):

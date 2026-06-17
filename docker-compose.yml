@@ -86,6 +86,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    env_file: .env
     environment:
       AIRFLOW__CORE__DAGS_FOLDER: /app/airflow/dags
       AIRFLOW__CORE__PLUGINS_FOLDER: /app/airflow/plugins
@@ -101,6 +102,7 @@ services:
       - ./agents:/app/agents
       - ./pipelines:/app/pipelines
       - airflow_logs:/app/airflow/logs
+      - ~/.config/gcloud:/root/.config/gcloud:ro
     ports:
       - "8080:8080"
       - "8000:8000"
@@ -119,6 +121,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    env_file: .env
     environment:
       AIRFLOW__CORE__DAGS_FOLDER: /app/airflow/dags
       AIRFLOW__CORE__PLUGINS_FOLDER: /app/airflow/plugins
@@ -134,6 +137,7 @@ services:
       - ./agents:/app/agents
       - ./pipelines:/app/pipelines
       - airflow_logs:/app/airflow/logs
+      - ~/.config/gcloud:/root/.config/gcloud:ro
     command: airflow scheduler
     networks:
       - prod_network
@@ -149,6 +153,7 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    env_file: .env
     environment:
       AIRFLOW__CORE__DAGS_FOLDER: /app/airflow/dags
       AIRFLOW__CORE__PLUGINS_FOLDER: /app/airflow/plugins
@@ -164,6 +169,7 @@ services:
       - ./agents:/app/agents
       - ./pipelines:/app/pipelines
       - airflow_logs:/app/airflow/logs
+      - ~/.config/gcloud:/root/.config/gcloud:ro
     command: airflow celery worker
     networks:
       - prod_network
@@ -234,6 +240,7 @@ services:
         condition: service_healthy
       kafka:
         condition: service_started
+    env_file: .env
     environment:
       POSTGRES_HOST: postgres
       KAFKA_BROKER: kafka:9092
@@ -245,6 +252,7 @@ services:
       - ./scripts:/app/scripts
       - ./wip:/app/wip
       - ./tests:/app/tests
+      - ~/.config/gcloud:/root/.config/gcloud:ro
     ports:
       - "8081:8081"
     command: uvicorn api.server:app --host 0.0.0.0 --port 8081

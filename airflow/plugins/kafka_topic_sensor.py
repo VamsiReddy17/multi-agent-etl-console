@@ -12,6 +12,9 @@ from airflow.sensors.base import BaseSensorOperator
 from airflow.utils.decorators import apply_defaults
 from kafka import KafkaConsumer, TopicPartition
 
+import sys
+sys.path.append("/app")
+
 # Allow dynamic config loading
 from agents.config import PipelineConfig
 

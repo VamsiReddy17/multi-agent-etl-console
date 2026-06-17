@@ -14,8 +14,7 @@ from decimal import Decimal
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
-from airflow.providers.google.cloud.hooks.gcs import GCSHook
-from airflow.providers.google.cloud.hooks.bigquery import BigQueryHook
+
 
 DEFAULT_ARGS = {
     "owner": "data-engineering",
@@ -33,12 +32,13 @@ def sync_postgres_to_bigquery(**context) -> None:
     postgres_conn_id = "postgres_default"
     
     pg_hook = PostgresHook(postgres_conn_id=postgres_conn_id)
-    gcs_hook = GCSHook(gcp_conn_id=gcp_conn_id)
-    bq_hook = BigQueryHook(gcp_conn_id=gcp_conn_id)
+    
+    from google.cloud import bigquery
+    gcp_project = os.getenv("GCP_PROJECT_ID", "dataengineering-481815")
+    bq_client = bigquery.Client(project=gcp_project)
     
     dataset_id = "raw"
     table_id = "order_events"
-    bq_client = bq_hook.get_client()
     
     watermark = "1970-01-01 00:00:00"
     
@@ -98,34 +98,36 @@ def sync_postgres_to_bigquery(**context) -> None:
             
     print(f"Staged {len(rows)} records locally at {local_file_path}")
     
-    # 4. Upload to GCS
-    gcs_key = f"stages/order_events/{context['ds_nodash']}/sync.json"
-    gcs_hook.upload(
-        bucket_name=gcs_bucket,
-        object_name=gcs_key,
-        filename=local_file_path
-    )
-    print(f"Uploaded staged file to GCS: gs://{gcs_bucket}/{gcs_key}")
-    
-    # 5. Load into BigQuery raw table
+    # 4. Load directly into BigQuery from local JSONL
     try:
         table_ref = f"{bq_client.project}.{dataset_id}.{table_id}"
         
         from google.cloud import bigquery
-        job_config = bigquery.LoadJobConfig(
-            source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
-            write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
-            autodetect=True
-        )
+        schema = [
+            bigquery.SchemaField("event_id", "INTEGER"),
+            bigquery.SchemaField("order_id", "INTEGER"),
+            bigquery.SchemaField("customer_id", "INTEGER"),
+            bigquery.SchemaField("product_id", "INTEGER"),
+            bigquery.SchemaField("quantity", "INTEGER"),
+            bigquery.SchemaField("amount", "NUMERIC"),
+            bigquery.SchemaField("event_type", "STRING"),
+            bigquery.SchemaField("event_timestamp", "TIMESTAMP"),
+            bigquery.SchemaField("received_at", "TIMESTAMP"),
+            bigquery.SchemaField("processed", "BOOLEAN"),
+        ]
+        with open(local_file_path, "rb") as source_file:
+            job_config = bigquery.LoadJobConfig(
+                source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
+                write_disposition=bigquery.WriteDisposition.WRITE_APPEND,
+                schema=schema
+            )
+            load_job = bq_client.load_table_from_file(source_file, table_ref, job_config=job_config)
+            load_job.result()
         
-        uri = f"gs://{gcs_bucket}/{gcs_key}"
-        load_job = bq_client.load_table_from_uri(uri, table_ref, job_config=job_config)
-        load_job.result()
-        
-        print(f"Successfully loaded data from {uri} into BigQuery table {table_ref}")
+        print(f"Successfully loaded data from local staged file into BigQuery table {table_ref}")
         
     except Exception as e:
-        print(f"Failed to load staged file from GCS into BigQuery: {e}")
+        print(f"Failed to load staged file into BigQuery: {e}")
         raise e
     finally:
         if os.path.exists(local_file_path):

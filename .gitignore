@@ -18,6 +18,7 @@
 
 
 # Python caching & packaging
+.venv/
 __pycache__/
 *.pyc
 *.pyo

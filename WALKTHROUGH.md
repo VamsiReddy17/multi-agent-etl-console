@@ -35,6 +35,33 @@ You can launch and stop the complete application stack directly from macOS Finde
   Double-click **[Start.command](file:///Users/vamsireddy/Desktop/Agents%20Dev/production-pipeline/Start.command)** in the project root folder.
   *This automatically launches Docker Desktop (if not already running), spins up all containers, verifies database health, creates streaming topics, starts the ETL daemon, and boots up the React dashboard.*
 
+- **Historical Backfill Sync**: Created [backfill_bigquery.py](file:///Users/vamsireddy/Desktop/Agents%20Dev/production-pipeline/scripts/backfill_bigquery.py) under `scripts/` to execute safe, chunk-by-chunk migration of PostgreSQL history to BigQuery via GCS staging using Application Default Credentials (ADC).
+
+---
+
+## Bypassing GCS & Direct BigQuery Loading (Session 17)
+
+We resolved the Google Cloud client library dependencies, overcame billing account constraints on the GCP projects, and verified the entire PostgreSQL to BigQuery ELT pipeline:
+
+### 1. Direct BigQuery Loading Implementation (Bypassing GCS)
+- **Problem**: The GCP projects (`dataengineering-481815` and `pipeline-pulse1`) did not have active billing accounts, throwing `403 Forbidden` errors during GCS bucket creation.
+- **Solution**: Re-engineered the backfill script ([backfill_bigquery.py](file:///Users/vamsireddy/Desktop/Agents%20Dev/production-pipeline/scripts/backfill_bigquery.py)) and the incremental sync DAG ([postgres_to_bigquery_sync.py](file:///Users/vamsireddy/Desktop/Agents%20Dev/production-pipeline/airflow/dags/postgres_to_bigquery_sync.py)) to upload data directly using BigQuery's `load_table_from_file` client API. This bypassed GCS staging entirely, allowing the ELT pipeline to run under the free **BigQuery Sandbox** tier.
+- **Schema Mapping**: Explicitly defined the table schema in `LoadJobConfig` in the sync DAG to prevent type mismatch errors (autodetecting `amount` as `FLOAT` instead of `NUMERIC`).
+
+### 2. Docker & Airflow Environment Updates
+- **GCP credentials**: Updated [docker-compose.yml](file:///Users/vamsireddy/Desktop/Agents%20Dev/production-pipeline/docker-compose.yml) to mount the host's Application Default Credentials (`~/.config/gcloud:/root/.config/gcloud:ro`) and link `.env` variables to containerized Airflow and API services.
+- **Plugin import pathing**: Fixed a plugin loading crash in [kafka_topic_sensor.py](file:///Users/vamsireddy/Desktop/Agents%20Dev/production-pipeline/airflow/plugins/kafka_topic_sensor.py) by appending `/app` to `sys.path`.
+- **Worker PID recovery**: Recovered the Airflow worker container by removing the stale pidfile `airflow-worker.pid`.
+
+### 3. Looker Dashboard View Optimization
+- **File**: [reporting_views.sql](file:///Users/vamsireddy/Desktop/Agents%20Dev/production-pipeline/bigquery/transformations/reporting_views.sql)
+- **Change**: Removed the `WHERE processed = true` clause from the view `warehouse.orders_reporting`. This enables Looker Studio to display all successfully loaded events without waiting for PostgreSQL's daily processing cycle.
+
+### 4. Verification & Testing
+- **Backfill**: Executed `backfill_bigquery.py`, successfully loading all **2,063,482** historical order events into BigQuery.
+- **DAG Execution**: Triggered `postgres_to_bigquery_sync` in Airflow; all tasks succeeded, updating the BigQuery raw table to **2,208,177** rows.
+- **Tests**: Executed the test suite in the API container; **all 58 tests passed successfully** with zero Airflow DAG errors.
+
 * **To Stop & Clean Up**:
   Double-click **[Stop.command](file:///Users/vamsireddy/Desktop/Agents%20Dev/production-pipeline/Stop.command)** in the project root folder.
   *This cleanly shuts down active ETL streams, terminates the local dashboard server, and winds down the Docker container stack.*

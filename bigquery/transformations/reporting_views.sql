@@ -10,6 +10,5 @@ CREATE OR REPLACE VIEW `warehouse.orders_reporting` AS (
         received_at
     FROM 
         `raw.order_events`
-    WHERE 
-        processed = true
 );
+
