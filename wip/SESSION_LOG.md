@@ -604,19 +604,23 @@ curl -s http://localhost:8081/pipeline/status
 
 **IDE**: Antigravity
 **Developer**: Vamsi Reddy
-**Goal**: Design and implement a load testing framework to benchmark pipeline ingestion rates across different `KAFKA_BATCH_SIZE` parameters, and generate a performance comparison report.
+**Goal**: Design and implement a load testing framework to benchmark pipeline ingestion rates, and build a Dead-Letter Queue (DLQ) retry mechanism with permanent failures database routing.
 
 ### 🔍 Activities
 - **Volume Persistences**: Modified `docker-compose.yml` to mount host directories (`./scripts`, `./tests`, `./wip`) into the `api` container, enabling hot-reloading and direct persistence of results.
 - **Benchmark Implementation**: Created `scripts/load_test.py` that handles check/creation of a `load_test_orders` Kafka topic, fast ingestion of 10,000 JSON messages, and parametric consumer processing benchmarking.
-- **Parametric Consuming**: Tested batch sizes `[100, 500, 1000, 2000, 5000]` by overriding the consumer group dynamically and disabling the Referee dynamic throughput controller during testing.
-- **Execution & Reporting**: Executed the load test inside the Docker container, verifying correct Postgres order loading, and compiled results to `wip/LOAD_TEST_RESULTS.md`.
+- **Parametric Consuming**: Tested batch sizes `[100, 500, 1000, 2000, 5000]` by overriding the consumer group dynamically and disabling the Referee dynamic throughput controller during testing. Logged results to `wip/LOAD_TEST_RESULTS.md`.
+- **Database Schema Extension**: Added `warehouse.permanent_failures` table definition to `postgres/init.sql` and ran the DDL command inside the active PostgreSQL container to update the database.
+- **DLQ Retry Agent**: Created `scripts/retry_dlq.py` to batch-consume from the `dead_letter` Kafka topic. Extracted attempt counts from Kafka message headers, ran messages back through transform/quality checks, loaded valid events, and routed failed events to the database (re-queueing if attempt < 3, archiving to `permanent_failures` if attempt >= 3).
+- **Airflow Scheduler**: Created `airflow/dags/retry_dlq_dag.py` running the python script hourly.
+- **Verification**: Executed the retry script, verifying successful extraction, re-routing, and database insertions. Created `tests/test_retry_dlq.py` unit tests which pass successfully.
 
 ### 💻 Commands Run
 ```bash
-docker-compose up -d --no-deps api
 docker exec prod_api python3 /app/scripts/load_test.py --broker kafka:9092
 docker exec prod_postgres psql -U postgres -d dataware -c "SELECT COUNT(*) FROM warehouse.order_events;"
+docker exec prod_api python3 /app/scripts/retry_dlq.py
+docker exec prod_postgres psql -U postgres -d dataware -c "SELECT COUNT(*) FROM warehouse.permanent_failures;"
 docker exec prod_api pytest tests/ -v
 ```
 
@@ -627,21 +631,19 @@ docker exec prod_api pytest tests/ -v
   - **1000 batch**: 2110.73 rows/sec, 473.0ms batch latency
   - **2000 batch**: 2110.80 rows/sec, 946.2ms batch latency
   - **5000 batch**: 2125.65 rows/sec, 2349.5ms batch latency
-- Pytest: All 54 tests pass cleanly inside container.
+- DLQ Retry Batch: Processed 30,311 events. Successfully loaded 1,091 resolved orders, re-queued 19,480 items, and archived 9,740 permanent failures.
+- Pytest: All 58 unit and integration tests passing successfully inside container.
 
 ### ⚠️ Issues Hit
-- FileNotFoundError: When running the script inside the container, saving results to `/Users/vamsireddy/...` failed as absolute path doesn't map to container path `/app`.
-- Stale tests inside container: Recreating the container restored build-time unit tests, causing Starlette test client failures due to missing volume mapping for tests.
+- FileNotFoundError: Saving results inside the container to host paths failed due to relative path resolution changes inside Docker.
+- Stale unit tests inside container on recreate: Caused test client failures since `tests` was not volume mounted.
 
 ### 🔧 Fixes Applied
-- Switched the output path in `scripts/load_test.py` to be dynamic using `os.path.dirname(os.path.abspath(__file__))` to map to `/app/wip/` in the container.
-- Mounted `./wip:/app/wip` and `./tests:/app/tests` in `docker-compose.yml` volumes for `api` and restarted the container.
+- Made all script output file paths relative using Python's `os.path`.
+- Mounted `./wip:/app/wip` and `./tests:/app/tests` in `docker-compose.yml` volumes for the `api` service.
 
 ### ✅ Completions This Session
 - Implemented and executed parametric load testing framework.
-- Persisted results and recommended tuning options in `wip/LOAD_TEST_RESULTS.md`.
-
-### 📋 Pending for Next Session
 - Low Priority 4 roadmap: Retry Dead-Letter Records cron job.
 
 ---

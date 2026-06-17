@@ -46,6 +46,7 @@
 | `agents/__init__.py` | ✅ | Session 1 / 11 / 12 | Clean exports including DeadLetterAgent and BigQueryLoadAgent |
 | `agents/dead_letter_agent.py` | ✅ | Session 11 | Routes quarantined records to the dead-letter Kafka topic |
 | `agents/bigquery_load_agent.py` | ✅ | Session 12 | Dynamic JSON insertions to GCP BigQuery tables (orders, quarantines, executions, reports) |
+| `scripts/retry_dlq.py` | ✅ | Session 14 | DLQ retry batch processor using Kafka headers to track retry counts |
 
 ---
 
@@ -67,6 +68,7 @@
 |------|-----------|---------|-------|
 | `airflow/dags/streaming_etl_dag.py` | ✅ | Session 1 / 11 | Every 5 min, now featuring KafkaTopicSensor and parallel DLQ task |
 | `airflow/dags/batch_orders_dag.py` | ✅ | Session 1 | Daily midnight, reprocess unprocessed events |
+| `airflow/dags/retry_dlq_dag.py` | ✅ | Session 14 | Consumes from dead_letter topic hourly to validate and retry |
 | `airflow/plugins/kafka_topic_sensor.py` | ✅ | Session 11 | Custom sensor checking unconsumed messages without advancing offsets |
 | `airflow/plugins/__init__.py` | ✅ | Session 11 | Registers the `KafkaTopicSensor` plugin in Airflow |
 
@@ -86,6 +88,7 @@
 | `tests/test_topic_sensor.py` | ✅ Passed | Session 11 | ✅ Live verified |
 | `tests/test_bigquery_agent.py` | ✅ Passed | Session 12 | ✅ Live verified |
 | `tests/test_api.py` | ✅ Passed | Session 13 | ✅ Live verified |
+| `tests/test_retry_dlq.py` | ✅ Passed | Session 14 | ✅ Live verified |
 
 ---
 
@@ -144,3 +147,4 @@
 | Grafana dashboard preloaded | ✅ Passed | Session 4, 5 & 6 | Dashboard rendering live non-zero charts |
 | API layer response validation | ✅ Passed | Session 13 | Tested `/health`, `/pipeline/status`, and `/pipeline/run` successfully |
 | Parametric load test verification | ✅ Passed | Session 14 | Ingested 10k messages at ~2,120 rows/sec on local Docker environment |
+| DLQ retry loop validation | ✅ Passed | Session 14 | Successfully processed 30k DLQ events and logged 9.7k permanent failures |

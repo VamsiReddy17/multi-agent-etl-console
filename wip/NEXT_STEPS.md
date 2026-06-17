@@ -48,9 +48,7 @@
 
 ## 🔵 Priority 4 — Low (Future Sessions)
 
-### [ ] Retry dead-letter records
-- Cron job that reads `dead_letter` topic and re-runs through pipeline
-- After N retries, move to `permanent_failures` table
+*All backlog tasks completed and verified.*
 
 ---
 
@@ -96,6 +94,7 @@
 | Implement BigQueryLoadAgent and target routing | ✅ | Session 12 |
 | Implement containerized FastAPI REST API layer | ✅ | Session 13 |
 | Ingest 10,000 Kafka events and run parametric load test | ✅ | Session 14 |
+| Implement DLQ retry loop & permanent failures database routing | ✅ | Session 14 |
 
 ---
 

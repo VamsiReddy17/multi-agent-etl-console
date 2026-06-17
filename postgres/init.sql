@@ -129,6 +129,24 @@ CREATE TABLE IF NOT EXISTS warehouse.quality_report (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Permanent Failures Table
+CREATE TABLE IF NOT EXISTS warehouse.permanent_failures (
+    failure_id SERIAL PRIMARY KEY,
+    order_id INTEGER,
+    customer_id INTEGER,
+    product_id INTEGER,
+    quantity INTEGER,
+    amount DECIMAL(12, 2),
+    event_type VARCHAR(50),
+    event_timestamp TIMESTAMP,
+    error_message TEXT,
+    failed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    retry_count INTEGER
+);
+
+-- Create indexes
+CREATE INDEX idx_permanent_failures_order ON warehouse.permanent_failures(order_id);
+
 -- Grant permissions
 GRANT ALL PRIVILEGES ON SCHEMA warehouse TO postgres;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA warehouse TO postgres;
