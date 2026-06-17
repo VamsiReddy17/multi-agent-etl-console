@@ -97,6 +97,7 @@
 | Implement DLQ retry loop & permanent failures database routing | ✅ | Session 14 |
 | Implement interactive SVG telemetry trend charts | ✅ | Session 16 |
 | Implement PostgreSQL to BigQuery incremental ELT sync pipeline | ✅ | Session 16 |
+| Implement historical BigQuery backfill script | ✅ | Session 16 |
 
 ---
 

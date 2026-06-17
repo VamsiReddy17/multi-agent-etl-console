@@ -62,6 +62,7 @@
 | `wip/LOAD_TEST_RESULTS.md` | ✅ | Session 14 | Performance comparison report detailing optimal batch size suggestions |
 | Interactive SVG Telemetry Charts | ✅ | Session 16 | Real-time trend visualizer with hoversnapping, dynamic scaling, glassmorphic tooltips, and legend toggles |
 | `airflow/dags/postgres_to_bigquery_sync.py` | ✅ | Session 16 | Incremental ELT sync DAG using watermarks and GCS staging |
+| `scripts/backfill_bigquery.py` | ✅ | Session 16 | Historical data sync script using paging chunks, GCS staging, and BQ bulk inserts |
 
 ---
 

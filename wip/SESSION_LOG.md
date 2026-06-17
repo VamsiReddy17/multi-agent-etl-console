@@ -667,6 +667,7 @@ docker exec prod_api pytest tests/ -v
 - Created root directory `bigquery/` to store raw event schemas and reporting views.
 - Implemented incremental replication Airflow DAG `postgres_to_bigquery_sync.py` utilizing GCS staging and table watermarking.
 - Updated `docs/BIGQUERY_MIGRATION.md` with incremental replication guidelines.
+- Created backfill_bigquery.py historical synchronization script using paging chunks, GCS staging, and BQ load jobs.
 
 ### 💻 Commands Run
 ```bash
