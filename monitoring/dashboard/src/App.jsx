@@ -637,9 +637,16 @@ export default function App() {
   // Command palette search index
   const cmdItems = [
     // Tabs
-    ...['chronicle', 'bestiary', 'codex', 'forge', 'constellation', 'watchtower', 'quarantine'].map((id, i) => ({
-      type: 'tab', id, label: `Go to The ${id.charAt(0).toUpperCase() + id.slice(1)}`, shortcut: `${i + 1}`,
-      icon: [BookOpen, Bug, Award, Activity, Layers, Eye, AlertTriangle][i]
+    ...[
+      { id: 'chronicle', name: 'The Chronicle', sub: 'Session Timeline', icon: BookOpen },
+      { id: 'bestiary', name: 'The Bestiary', sub: 'Bug Tracker', icon: Bug },
+      { id: 'codex', name: 'The Codex', sub: 'Development Log', icon: Award },
+      { id: 'forge', name: 'The Forge', sub: 'Pipeline Metrics', icon: Activity },
+      { id: 'constellation', name: 'The Constellation', sub: 'Data Flow Canvas', icon: Layers },
+      { id: 'watchtower', name: 'The Watchtower', sub: 'System Topology', icon: Eye },
+      { id: 'quarantine', name: 'The Quarantine', sub: 'Anomaly Hub', icon: AlertTriangle },
+    ].map((item, i) => ({
+      type: 'tab', id: item.id, label: `Go to ${item.name} (${item.sub})`, shortcut: `${i + 1}`, icon: item.icon
     })),
     // Actions
     { type: 'action', id: 'toggle-sim', label: isGenerating ? 'Pause Simulation' : 'Resume Simulation', icon: isGenerating ? Pause : Play },
@@ -658,7 +665,7 @@ export default function App() {
 
   const executeCmdItem = (item) => {
     setCmdOpen(false);
-    if (item.type === 'tab') { setActiveTab(item.id); addToast('info', `Navigated to The ${item.id.charAt(0).toUpperCase() + item.id.slice(1)}`); }
+    if (item.type === 'tab') { setActiveTab(item.id); addToast('info', `Navigated to ${item.label.replace('Go to ', '')}`); }
     else if (item.type === 'action' && item.id === 'toggle-sim') { setIsGenerating(p => !p); addToast('info', isGenerating ? 'Simulation paused' : 'Simulation resumed'); }
     else if (item.type === 'action' && item.id === 'toggle-live') { setLiveMode(p => !p); addToast('info', liveMode ? 'Switched to Simulation' : 'Switched to Live'); }
     else if (item.type === 'session') { setActiveTab('chronicle'); setExpandedChapter(parseInt(item.id.split('-')[1])); addToast('info', `Opened ${item.label}`); }
@@ -691,14 +698,14 @@ export default function App() {
   // ═════════════════════════════════════════════════════════════════════════════
   const navItems = [
     { section: 'NARRATIVE' },
-    { id: 'chronicle', label: 'The Chronicle', icon: <BookOpen size={18} />, kbd: '1' },
-    { id: 'bestiary', label: 'The Bestiary', icon: <Bug size={18} />, badge: BUGS.length, kbd: '2' },
-    { id: 'codex', label: 'The Codex', icon: <Award size={18} />, kbd: '3' },
+    { id: 'chronicle', label: 'The Chronicle', subtitle: 'Session Timeline', icon: <BookOpen size={18} />, kbd: '1' },
+    { id: 'bestiary', label: 'The Bestiary', subtitle: 'Bug Tracker', icon: <Bug size={18} />, badge: BUGS.length, kbd: '2' },
+    { id: 'codex', label: 'The Codex', subtitle: 'Development Log', icon: <Award size={18} />, kbd: '3' },
     { section: 'OPERATIONS' },
-    { id: 'forge', label: 'The Forge', icon: <Activity size={18} />, kbd: '4' },
-    { id: 'constellation', label: 'The Constellation', icon: <Layers size={18} />, kbd: '5' },
-    { id: 'watchtower', label: 'The Watchtower', icon: <Eye size={18} />, kbd: '6' },
-    { id: 'quarantine', label: 'The Quarantine', icon: <AlertTriangle size={18} />, badge: quarantineRecords.length, kbd: '7' },
+    { id: 'forge', label: 'The Forge', subtitle: 'Pipeline Metrics', icon: <Activity size={18} />, kbd: '4' },
+    { id: 'constellation', label: 'The Constellation', subtitle: 'Data Flow Canvas', icon: <Layers size={18} />, kbd: '5' },
+    { id: 'watchtower', label: 'The Watchtower', subtitle: 'System Topology', icon: <Eye size={18} />, kbd: '6' },
+    { id: 'quarantine', label: 'The Quarantine', subtitle: 'Anomaly Hub', icon: <AlertTriangle size={18} />, badge: quarantineRecords.length, kbd: '7' },
   ];
 
   // ═════════════════════════════════════════════════════════════════════════════
@@ -728,7 +735,10 @@ export default function App() {
                 onClick={() => setActiveTab(item.id)}
               >
                 {item.icon}
-                <span>{item.label}</span>
+                <div className="nav-item-text">
+                  <div className="nav-item-label">{item.label}</div>
+                  <div className="nav-item-subtitle">{item.subtitle}</div>
+                </div>
                 {item.badge > 0 && <span className="nav-badge">{item.badge}</span>}
                 {item.kbd && <span className="kbd-hint">{item.kbd}</span>}
               </div>
@@ -754,13 +764,48 @@ export default function App() {
       <main className="fable-main">
         <header className="fable-topbar">
           <div className="topbar-title">
-            {activeTab === 'chronicle' && '📜 The Chronicle'}
-            {activeTab === 'bestiary' && '🐛 The Bestiary'}
-            {activeTab === 'codex' && '📖 The Codex'}
-            {activeTab === 'forge' && '⚡ The Forge'}
-            {activeTab === 'constellation' && '✨ The Constellation'}
-            {activeTab === 'watchtower' && '🗼 The Watchtower'}
-            {activeTab === 'quarantine' && '🔒 The Quarantine'}
+            {activeTab === 'chronicle' && (
+              <>
+                <span>📜 The Chronicle</span>
+                <span className="topbar-subtitle">Session Timeline</span>
+              </>
+            )}
+            {activeTab === 'bestiary' && (
+              <>
+                <span>🐛 The Bestiary</span>
+                <span className="topbar-subtitle">Errors & Bug Tracker</span>
+              </>
+            )}
+            {activeTab === 'codex' && (
+              <>
+                <span>📖 The Codex</span>
+                <span className="topbar-subtitle">Development Saga</span>
+              </>
+            )}
+            {activeTab === 'forge' && (
+              <>
+                <span>⚡ The Forge</span>
+                <span className="topbar-subtitle">Pipeline Metrics</span>
+              </>
+            )}
+            {activeTab === 'constellation' && (
+              <>
+                <span>✨ The Constellation</span>
+                <span className="topbar-subtitle">Data Flow Canvas</span>
+              </>
+            )}
+            {activeTab === 'watchtower' && (
+              <>
+                <span>🗼 The Watchtower</span>
+                <span className="topbar-subtitle">System Topology & Health</span>
+              </>
+            )}
+            {activeTab === 'quarantine' && (
+              <>
+                <span>🔒 The Quarantine</span>
+                <span className="topbar-subtitle">Anomaly Isolation Hub</span>
+              </>
+            )}
           </div>
           <div className="topbar-controls">
             <div

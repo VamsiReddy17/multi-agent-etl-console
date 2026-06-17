@@ -148,6 +148,24 @@ Inspired by Datadog and Linear, every data visualization includes context about 
 | **Sapphire** (#3b82f6) | Informational, database, neutral |
 | **Violet** (#8b5cf6) | Secondary accent, transformation, processing |
 
+### 9. Hybrid Metaphorical-Literal Naming
+> *"Metaphors structure context. Literal labels guarantee understanding."*
+
+We pair creative metaphors (branding modules) with explicit, literal subtitles:
+* **The Chronicle** → *Session Timeline*
+* **The Bestiary** → *Errors & Bug Tracker*
+* **The Codex** → *Development Saga / Narrative*
+* **The Forge** → *Pipeline Metrics & Telemetry*
+* **The Constellation** → *Data Flow Canvas*
+* **The Watchtower** → *System Topology & Health*
+* **The Quarantine** → *Anomaly Isolation Hub*
+
+This hybrid paradigm is designed directly into our code and UI:
+* **Sidebar Navigation**: Displays both metaphorical title and literal subtitle in a vertical stack (e.g. *The Chronicle* with *Session Timeline* beneath it).
+* **Command Palette (⌘K)**: Sub-labels each option (e.g. *Go to The Bestiary (Bug Tracker)*) for search ease.
+* **Topbar Headers**: Separates the metaphor and literal label with a thin vertical glass border (e.g. `📜 The Chronicle | Session Timeline`).
+* **Onboarding Friendly**: Zero friction for new engineers who can navigate based on direct functional purposes.
+
 ---
 
 ## Design System Specification
