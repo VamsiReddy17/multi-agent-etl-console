@@ -49,6 +49,13 @@ VALUES
      %(rows_processed)s, %(error_message)s);
 """
 
+INSERT_QUALITY_REPORT_SQL = """
+INSERT INTO warehouse.quality_report
+    (pipeline_name, start_time, end_time, total_records, valid_records, quarantined_records, error_rate)
+VALUES
+    (%(pipeline_name)s, %(start_time)s, %(end_time)s, %(total_records)s, %(valid_records)s, %(quarantined_records)s, %(error_rate)s);
+"""
+
 
 class PostgresLoadAgent:
     """
@@ -165,6 +172,22 @@ class PostgresLoadAgent:
                     "status": "success",
                     "rows_processed": rows_loaded,
                     "error_message": None,
+                })
+
+                # Log quality report
+                total_records = len(records) + len(quarantined)
+                valid_records = len(records)
+                quarantined_records = len(quarantined)
+                error_rate = (quarantined_records / total_records * 100.0) if total_records > 0 else 0.0
+
+                cur.execute(INSERT_QUALITY_REPORT_SQL, {
+                    "pipeline_name": self.config.pipeline_name,
+                    "start_time": pipeline_start,
+                    "end_time": datetime.now(timezone.utc),
+                    "total_records": total_records,
+                    "valid_records": valid_records,
+                    "quarantined_records": quarantined_records,
+                    "error_rate": error_rate,
                 })
             conn.commit()
         except Exception as exc:

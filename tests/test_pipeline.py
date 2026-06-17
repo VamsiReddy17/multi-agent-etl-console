@@ -82,7 +82,7 @@ class TestFullPipeline:
 
         load_result = load_agent.run(quality_result, pipeline_start_time=datetime.now(timezone.utc))
         assert load_result["status"] == "success"
-        cursor.executemany.assert_called_once()
+        assert cursor.executemany.call_count == 2
 
     def test_all_bad_records_nothing_loaded(self, config):
         """All records fail quality — load is skipped."""
@@ -98,9 +98,12 @@ class TestFullPipeline:
         assert quality_result["quarantined_count"] == 3
 
         load_agent = PostgresLoadAgent(config)
+        conn, cursor = _mock_conn()
+        load_agent._conn = conn
         load_result = load_agent.run(quality_result)
-        assert load_result["status"] == "skipped"
+        assert load_result["status"] == "success"
         assert load_result["rows_loaded"] == 0
+        assert cursor.executemany.call_count == 1
 
     def test_empty_ingest_skips_all_stages(self, config):
         """Empty Kafka poll short-circuits the whole chain gracefully."""

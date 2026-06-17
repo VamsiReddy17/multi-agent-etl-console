@@ -116,6 +116,20 @@ INSERT INTO warehouse.orders (customer_id, product_id, order_date, quantity, uni
     (1, 4, NOW() - INTERVAL '4 days', 1, 299.99, 299.99, 'completed'),
     (4, 5, NOW() - INTERVAL '5 days', 1, 199.99, 199.99, 'pending');
 
+-- Quality Report Table
+CREATE TABLE IF NOT EXISTS warehouse.quality_report (
+    report_id SERIAL PRIMARY KEY,
+    pipeline_name VARCHAR(255),
+    start_time TIMESTAMP,
+    end_time TIMESTAMP,
+    total_records INTEGER,
+    valid_records INTEGER,
+    quarantined_records INTEGER,
+    error_rate DECIMAL(5, 2),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 -- Grant permissions
 GRANT ALL PRIVILEGES ON SCHEMA warehouse TO postgres;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA warehouse TO postgres;
+

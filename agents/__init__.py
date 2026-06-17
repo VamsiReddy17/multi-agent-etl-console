@@ -7,6 +7,7 @@ from .kafka_ingestion_agent import KafkaIngestionAgent
 from .transform_agent import TransformAgent
 from .quality_agent import QualityAgent
 from .postgres_load_agent import PostgresLoadAgent
+from .dead_letter_agent import DeadLetterAgent
 
 __all__ = [
     "PipelineConfig",
@@ -14,4 +15,5 @@ __all__ = [
     "TransformAgent",
     "QualityAgent",
     "PostgresLoadAgent",
+    "DeadLetterAgent",
 ]

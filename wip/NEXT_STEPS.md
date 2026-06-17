@@ -42,16 +42,7 @@
 
 ## 🟢 Priority 3 — Medium (Next Session)
 
-### [ ] Write `airflow/plugins/` — custom Airflow sensor
-- `KafkaTopicSensor` — waits until a Kafka topic has messages before triggering DAG
-
-### [ ] Add dead letter queue
-- Route quarantined records to a `dead_letter` Kafka topic instead of just logging
-- Add `dead_letter_agent.py`
-
-### [ ] Add data quality report
-- After each pipeline run, generate a summary: total, valid, quarantined, error rate
-- Save to `warehouse.quality_report` table
+*All medium-priority tasks completed and verified.*
 
 ---
 
@@ -118,6 +109,9 @@
 | Add CONTRIBUTING.md & SECURITY.md guidelines | ✅ | Session 7 |
 | Design & Build Phase 3 "The Observatory" | ✅ | Session 9 |
 | Cosmic Theme Overhaul (The Cosmos) | ✅ | Session 10 |
+| Write custom Airflow KafkaTopicSensor | ✅ | Session 11 |
+| Add dead letter queue routing to dead_letter topic | ✅ | Session 11 |
+| Add data quality report persistence to Postgres | ✅ | Session 11 |
 
 ---
 

@@ -27,6 +27,8 @@
 | `docker-compose.yml (generator update)` | ✅ | Session 5 | Configures `order_generator` background daemon |
 | `monitoring/dashboard/src/index.css` (Cosmos) | ✅ | Session 10 | Renamed all fable classes and style tokens to Cosmos |
 | `monitoring/dashboard/src/App.jsx` (Cosmos) | ✅ | Session 10 | Refactored active states, headers, and Command Palette targets |
+| `postgres/init.sql` (quality table updates) | ✅ | Session 11 | Added `warehouse.quality_report` table DDL |
+| `scripts/create_topics.sh` (dead_letter update) | ✅ | Session 11 | Configures and creates `dead_letter` Kafka topic |
 
 ---
 
@@ -38,8 +40,9 @@
 | `agents/kafka_ingestion_agent.py` | ✅ | Session 1 | Polls Kafka, JSON decode, batch size, error tolerance |
 | `agents/transform_agent.py` | ✅ | Session 1 | Type coerce, totals, timestamps, metadata |
 | `agents/quality_agent.py` | ✅ | Session 1 | Required fields, ranges, duplicates, quarantine |
-| `agents/postgres_load_agent.py` | ✅ | Session 1 | Batch upsert, idempotent, execution logging |
-| `agents/__init__.py` | ✅ | Session 1 | Clean exports |
+| `agents/postgres_load_agent.py` | ✅ | Session 1 / 11 | Batch upsert, idempotent, execution logging, and Session 11 data quality reporting |
+| `agents/__init__.py` | ✅ | Session 1 / 11 | Clean exports including DeadLetterAgent |
+| `agents/dead_letter_agent.py` | ✅ | Session 11 | Routes quarantined records to the dead-letter Kafka topic |
 
 ---
 
@@ -47,7 +50,7 @@
 
 | Item | Completed | Session | Notes |
 |------|-----------|---------|-------|
-| `pipelines/streaming_etl.py` | ✅ | Session 1 | run_once + run_loop + CLI entry point |
+| `pipelines/streaming_etl.py` | ✅ | Session 1 / 11 | run_once + run_loop + CLI entry point, and Session 11 DLQ integration |
 | `pipelines/config/pipeline_config.yaml` | ✅ | Session 1 | Batch size, thresholds, intervals |
 
 ---
@@ -56,8 +59,10 @@
 
 | Item | Completed | Session | Notes |
 |------|-----------|---------|-------|
-| `airflow/dags/streaming_etl_dag.py` | ✅ | Session 1 | Every 5 min, 4 tasks, XCom result passing |
+| `airflow/dags/streaming_etl_dag.py` | ✅ | Session 1 / 11 | Every 5 min, now featuring KafkaTopicSensor and parallel DLQ task |
 | `airflow/dags/batch_orders_dag.py` | ✅ | Session 1 | Daily midnight, reprocess unprocessed events |
+| `airflow/plugins/kafka_topic_sensor.py` | ✅ | Session 11 | Custom sensor checking unconsumed messages without advancing offsets |
+| `airflow/plugins/__init__.py` | ✅ | Session 11 | Registers the `KafkaTopicSensor` plugin in Airflow |
 
 ---
 
@@ -69,8 +74,10 @@
 | `tests/test_transform_agent.py` | ✅ Passed | Session 1 | ✅ Live verified |
 | `tests/test_quality_agent.py` | ✅ Passed | Session 1 | ✅ Live verified |
 | `tests/test_postgres_agent.py` | ✅ Passed | Session 1 | ✅ Live verified |
-| `tests/test_pipeline.py` | ✅ Passed | Session 1 | ✅ Live verified |
+| `tests/test_pipeline.py` | ✅ Passed | Session 1 / 11 | ✅ Live verified |
 | `tests/test_metrics.py` | ✅ Passed | Session 3 | ✅ Live verified |
+| `tests/test_dlq_agent.py` | ✅ Passed | Session 11 | ✅ Live verified |
+| `tests/test_topic_sensor.py` | ✅ Passed | Session 11 | ✅ Live verified |
 
 ---
 
@@ -106,10 +113,10 @@
 | Item | Completed | Session | Notes |
 |------|-----------|---------|-------|
 | `wip/PARENT_PROMPT.md` | ✅ | Session 1 | Full project context for IDE |
-| `wip/SESSION_LOG.md` | ✅ | Session 1 | Living session tracker |
-| `wip/COMPLETIONS.md` | ✅ | Session 1 | This file |
+| `wip/SESSION_LOG.md` | ✅ | Session 1 / 11 | Living session tracker |
+| `wip/COMPLETIONS.md` | ✅ | Session 1 / 11 | This file |
 | `wip/ISSUES.md` | ✅ | Session 1 | Issue tracker |
-| `wip/NEXT_STEPS.md` | ✅ | Session 1 | Prioritised backlog |
+| `wip/NEXT_STEPS.md` | ✅ | Session 1 / 11 | Prioritised backlog |
 
 ---
 
@@ -117,11 +124,11 @@
 
 | Verification | Status | Session | Notes |
 |-------------|--------|---------|-------|
-| `pytest tests/ -v` passes | ✅ Passed | Session 2, 3, 5 & 6 | All 33 tests passing inside container |
-| `docker-compose up -d` succeeds | ✅ Passed | Session 4, 5 & 6 | All 10 containers healthy and running |
-| Kafka topics created | ✅ Passed | Session 4 | Topics successfully active |
+| `pytest tests/ -v` passes | ✅ Passed | Session 2, 3, 5, 6 & 11 | All 41 tests passing inside container |
+| `docker-compose up -d` succeeds | ✅ Passed | Session 4, 5, 6 & 11 | All 9 containers healthy and running |
+| Kafka topics created | ✅ Passed | Session 4 / 11 | Topics (including dead_letter) successfully active |
 | Airflow UI accessible | ✅ Passed | Session 4 | http://localhost:8080 active |
-| DAGs visible in Airflow | ✅ Passed | Session 4 | streaming_etl + batch_orders_etl visible |
+| DAGs visible in Airflow | ✅ Passed | Session 4 / 11 | streaming_etl (0 errors) + batch_orders_etl visible |
 | Test Kafka message ingested | ✅ Passed | Session 4, 5 & 6 | Ingests automatically from order generator |
 | Pipeline runs end-to-end | ✅ Passed | Session 4, 5 & 6 | Continuous loop mode metrics server active |
 | Data visible in PostgreSQL | ✅ Passed | Session 4, 5 & 6 | Verified database loads climbing continuously (109,000+ rows) |

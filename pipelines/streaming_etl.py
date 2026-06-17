@@ -58,6 +58,7 @@ from agents.kafka_ingestion_agent import KafkaIngestionAgent
 from agents.transform_agent import TransformAgent
 from agents.quality_agent import QualityAgent
 from agents.postgres_load_agent import PostgresLoadAgent
+from agents.dead_letter_agent import DeadLetterAgent
 
 logger = logging.getLogger("streaming_etl")
 
@@ -112,6 +113,7 @@ class StreamingETL:
         self.transform = TransformAgent(self.config)
         self.quality = QualityAgent(self.config)
         self.load = PostgresLoadAgent(self.config)
+        self.dead_letter = DeadLetterAgent(self.config)
 
         # Pipeline config
         p = self.yaml_cfg.get("pipeline", {})
@@ -208,6 +210,12 @@ class StreamingETL:
         print("▶ Stage 3/4 — Quality")
         quality_result = self.quality.run(transform_result)
         self._print_stage_result(quality_result)
+
+        # Dead Letter Queue Routing
+        if quality_result.get("quarantined_count", 0) > 0:
+            print("▶ Stage 3b/4 — Dead Letter Queue Routing")
+            dlq_result = self.dead_letter.run(quality_result)
+            self._print_stage_result(dlq_result)
 
         STAGE_DURATION_SECONDS.labels(stage="quality").observe(quality_result.get("duration_ms", 0) / 1000.0)
         ROWS_PROCESSED_TOTAL.labels(stage="quality").inc(quality_result.get("rows", 0))
@@ -306,6 +314,7 @@ class StreamingETL:
         """Close all agent connections."""
         self.ingestion.close()
         self.load.close()
+        self.dead_letter.close()
 
     @staticmethod
     def _print_stage_result(result: dict):

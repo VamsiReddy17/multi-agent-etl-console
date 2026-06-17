@@ -8,15 +8,15 @@ Each task maps to one agent stage so failures are isolated and retryable.
 from __future__ import annotations
 
 import sys
+sys.path.insert(0, "/app")
+sys.path.insert(0, "/app/airflow/plugins")
 import logging
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
-
-# Make agent/pipeline code importable inside Airflow
-sys.path.insert(0, "/app")
+from kafka_topic_sensor import KafkaTopicSensor
 
 log = logging.getLogger(__name__)
 
@@ -106,6 +106,25 @@ def task_load(**context) -> dict:
     return result
 
 
+def task_dlq(**context) -> dict:
+    """Route quarantined records to the dead letter Kafka topic."""
+    from agents.dead_letter_agent import DeadLetterAgent
+
+    quality_result = context["ti"].xcom_pull(key="quality_result", task_ids="quality")
+    if not quality_result or quality_result.get("quarantined_count", 0) == 0:
+        log.info("[dlq] No quarantined records to route — skipping")
+        return {"status": "skipped", "rows_sent": 0}
+
+    agent = DeadLetterAgent()
+    result = agent.run(quality_result)
+    agent.close()
+
+    log.info(f"[dlq] rows_sent={result['rows_sent']} status={result['status']}")
+    if result["status"] == "error":
+        raise RuntimeError(f"DLQ routing failed: {result.get('error_message')}")
+    return result
+
+
 # ---------------------------------------------------------------------------
 # DAG definition
 # ---------------------------------------------------------------------------
@@ -119,6 +138,13 @@ with DAG(
     max_active_runs=1,
     tags=["streaming", "etl", "kafka", "postgres"],
 ) as dag:
+
+    wait_for_data = KafkaTopicSensor(
+        task_id="wait_for_data",
+        poke_interval=10,
+        timeout=300,
+        mode="poke",
+    )
 
     ingest = PythonOperator(
         task_id="ingest",
@@ -140,5 +166,12 @@ with DAG(
         python_callable=task_load,
     )
 
-    # Chain: ingest → transform → quality → load
-    ingest >> transform >> quality >> load
+    dlq = PythonOperator(
+        task_id="dlq",
+        python_callable=task_dlq,
+    )
+
+    # Chain: wait_for_data → ingest → transform → quality → load & dlq
+    wait_for_data >> ingest >> transform >> quality
+    quality >> load
+    quality >> dlq

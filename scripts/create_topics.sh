@@ -21,7 +21,7 @@ for i in {1..30}; do
 done
 
 # Create topics
-TOPICS=("orders" "customers" "products" "events" "enriched_orders")
+TOPICS=("orders" "customers" "products" "events" "enriched_orders" "dead_letter")
 
 for topic in "${TOPICS[@]}"; do
     echo "Creating topic: $topic"
