@@ -87,8 +87,9 @@ def task_quality(**context) -> dict:
 
 
 def task_load(**context) -> dict:
-    """Load valid records into PostgreSQL."""
-    from agents.postgres_load_agent import PostgresLoadAgent
+    """Load valid records into database (PostgreSQL/BigQuery)."""
+    from agents.config import PipelineConfig
+    config = PipelineConfig()
 
     quality_result = context["ti"].xcom_pull(key="quality_result", task_ids="quality")
     if not quality_result or quality_result.get("rows", 0) == 0:
@@ -96,7 +97,16 @@ def task_load(**context) -> dict:
         return {"status": "skipped", "rows_loaded": 0}
 
     pipeline_start = datetime.now(timezone.utc)
-    agent = PostgresLoadAgent()
+    
+    if config.load_target == "bigquery":
+        from agents.bigquery_load_agent import BigQueryLoadAgent
+        if BigQueryLoadAgent is None:
+            raise ImportError("BigQueryLoadAgent is not available. Please install google-cloud-bigquery.")
+        agent = BigQueryLoadAgent(config)
+    else:
+        from agents.postgres_load_agent import PostgresLoadAgent
+        agent = PostgresLoadAgent(config)
+
     result = agent.run(quality_result, pipeline_start_time=pipeline_start)
     agent.close()
 

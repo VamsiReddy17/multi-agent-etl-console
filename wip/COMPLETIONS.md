@@ -41,8 +41,9 @@
 | `agents/transform_agent.py` | ✅ | Session 1 | Type coerce, totals, timestamps, metadata |
 | `agents/quality_agent.py` | ✅ | Session 1 | Required fields, ranges, duplicates, quarantine |
 | `agents/postgres_load_agent.py` | ✅ | Session 1 / 11 | Batch upsert, idempotent, execution logging, and Session 11 data quality reporting |
-| `agents/__init__.py` | ✅ | Session 1 / 11 | Clean exports including DeadLetterAgent |
+| `agents/__init__.py` | ✅ | Session 1 / 11 / 12 | Clean exports including DeadLetterAgent and BigQueryLoadAgent |
 | `agents/dead_letter_agent.py` | ✅ | Session 11 | Routes quarantined records to the dead-letter Kafka topic |
+| `agents/bigquery_load_agent.py` | ✅ | Session 12 | Dynamic JSON insertions to GCP BigQuery tables (orders, quarantines, executions, reports) |
 
 ---
 
@@ -74,10 +75,11 @@
 | `tests/test_transform_agent.py` | ✅ Passed | Session 1 | ✅ Live verified |
 | `tests/test_quality_agent.py` | ✅ Passed | Session 1 | ✅ Live verified |
 | `tests/test_postgres_agent.py` | ✅ Passed | Session 1 | ✅ Live verified |
-| `tests/test_pipeline.py` | ✅ Passed | Session 1 / 11 | ✅ Live verified |
+| `tests/test_pipeline.py` | ✅ Passed | Session 1 / 11 / 12 | ✅ Live verified |
 | `tests/test_metrics.py` | ✅ Passed | Session 3 | ✅ Live verified |
 | `tests/test_dlq_agent.py` | ✅ Passed | Session 11 | ✅ Live verified |
 | `tests/test_topic_sensor.py` | ✅ Passed | Session 11 | ✅ Live verified |
+| `tests/test_bigquery_agent.py` | ✅ Passed | Session 12 | ✅ Live verified |
 
 ---
 
@@ -124,8 +126,8 @@
 
 | Verification | Status | Session | Notes |
 |-------------|--------|---------|-------|
-| `pytest tests/ -v` passes | ✅ Passed | Session 2, 3, 5, 6 & 11 | All 41 tests passing inside container |
-| `docker-compose up -d` succeeds | ✅ Passed | Session 4, 5, 6 & 11 | All 9 containers healthy and running |
+| `pytest tests/ -v` passes | ✅ Passed | Session 2, 3, 5, 6, 11 & 12 | All 48 tests passing inside container |
+| `docker-compose up -d` succeeds | ✅ Passed | Session 4, 5, 6, 11 & 12 | All 9 containers healthy and running |
 | Kafka topics created | ✅ Passed | Session 4 / 11 | Topics (including dead_letter) successfully active |
 | Airflow UI accessible | ✅ Passed | Session 4 | http://localhost:8080 active |
 | DAGs visible in Airflow | ✅ Passed | Session 4 / 11 | streaming_etl (0 errors) + batch_orders_etl visible |

@@ -48,11 +48,6 @@
 
 ## 🔵 Priority 4 — Low (Future Sessions)
 
-### [ ] BigQuery migration
-- Implement `bigquery_load_agent.py`
-- Update pipeline config to support GCP targets
-- See `docs/BIGQUERY_MIGRATION.md`
-
 ### [ ] API layer
 - Add a FastAPI REST endpoint to trigger pipeline runs on-demand
 - `POST /pipeline/run` → triggers `streaming_etl.run_once()`
@@ -108,6 +103,7 @@
 | Write custom Airflow KafkaTopicSensor | ✅ | Session 11 |
 | Add dead letter queue routing to dead_letter topic | ✅ | Session 11 |
 | Add data quality report persistence to Postgres | ✅ | Session 11 |
+| Implement BigQueryLoadAgent and target routing | ✅ | Session 12 |
 
 ---
 

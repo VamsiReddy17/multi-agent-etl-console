@@ -56,9 +56,18 @@ class KafkaConfig:
 
 
 @dataclass
+class BigQueryConfig:
+    project_id: str = field(default_factory=lambda: os.getenv("GCP_PROJECT_ID"))
+    dataset: str = field(default_factory=lambda: os.getenv("BQ_DATASET", "warehouse"))
+    credentials_path: str = field(default_factory=lambda: os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
+
+
+@dataclass
 class PipelineConfig:
     db: DatabaseConfig = field(default_factory=DatabaseConfig)
     kafka: KafkaConfig = field(default_factory=KafkaConfig)
+    bq: BigQueryConfig = field(default_factory=BigQueryConfig)
+    load_target: str = field(default_factory=lambda: os.getenv("LOAD_TARGET", "postgres"))
     log_level: str = field(default_factory=lambda: os.getenv("LOG_LEVEL", "INFO"))
     debug: bool = field(default_factory=lambda: os.getenv("DEBUG", "false").lower() == "true")
     pipeline_name: str = "streaming-etl"

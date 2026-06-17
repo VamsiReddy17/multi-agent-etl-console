@@ -5,10 +5,12 @@ apache-airflow-providers-apache-kafka==1.0.0
 apache-airflow-providers-celery==3.1.0
 
 # Data & Processing
+numpy>=1.22.4,<2.0.0
 pandas==2.0.0
 psycopg2-binary==2.9.6
 kafka-python==2.0.2
 sqlalchemy==1.4.40
+google-cloud-bigquery==3.10.0
 
 # Multi-Agent Framework
 # (from reference architecture)

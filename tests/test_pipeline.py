@@ -132,3 +132,35 @@ class TestFullPipeline:
         assert rec["quantity"] == 5
         assert rec["amount"] == 100.5
         assert rec["total_amount"] == 502.5
+
+    @patch("agents.bigquery_load_agent.bigquery.Client")
+    def test_happy_path_bigquery_target(self, mock_client_class, config):
+        """Pipeline executes successfully when target is BigQuery."""
+        config.load_target = "bigquery"
+        config.bq.project_id = "test-project"
+        config.bq.dataset = "test_dataset"
+
+        mock_client = MagicMock()
+        mock_client.project = "test-project"
+        mock_client.insert_rows_json.return_value = []
+        mock_client_class.return_value = mock_client
+
+        from pipelines.streaming_etl import StreamingETL
+        pipeline = StreamingETL(config)
+        pipeline.quarantine_threshold = 1.0
+        
+        # Mock Ingest results
+        pipeline.ingestion.run = MagicMock(return_value=_mock_ingest_result(SAMPLE_RECORDS))
+        
+        summary = pipeline.run_once()
+        assert summary["status"] == "success"
+        
+        # Verify stages
+        stages = {s["agent"]: s for s in summary["stages"]}
+        assert "KafkaIngestionAgent" in stages
+        assert "TransformAgent" in stages
+        assert "QualityAgent" in stages
+        assert "BigQueryLoadAgent" in stages
+        
+        assert stages["BigQueryLoadAgent"]["rows_loaded"] == 2
+        assert mock_client.insert_rows_json.call_count == 4

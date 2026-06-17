@@ -112,7 +112,16 @@ class StreamingETL:
         self.ingestion = KafkaIngestionAgent(self.config)
         self.transform = TransformAgent(self.config)
         self.quality = QualityAgent(self.config)
-        self.load = PostgresLoadAgent(self.config)
+        
+        # Select loader target dynamically
+        if self.config.load_target == "bigquery":
+            from agents.bigquery_load_agent import BigQueryLoadAgent
+            if BigQueryLoadAgent is None:
+                raise ImportError("BigQueryLoadAgent is not available. Please install google-cloud-bigquery.")
+            self.load = BigQueryLoadAgent(self.config)
+        else:
+            self.load = PostgresLoadAgent(self.config)
+
         self.dead_letter = DeadLetterAgent(self.config)
 
         # Pipeline config
@@ -248,7 +257,8 @@ class StreamingETL:
             )
 
         # Stage 4: Load
-        print("▶ Stage 4/4 — PostgreSQL Load")
+        target_label = "BigQuery" if self.config.load_target == "bigquery" else "PostgreSQL"
+        print(f"▶ Stage 4/4 — {target_label} Load")
         load_result = self.load.run(quality_result, pipeline_start_time=pipeline_start)
         self._print_stage_result(load_result)
 
