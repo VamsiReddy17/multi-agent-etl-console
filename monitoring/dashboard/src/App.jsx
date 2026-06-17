@@ -429,6 +429,30 @@ export default function App() {
     runs: Array(20).fill(0).map(() => Math.random() * 50 + 50)
   });
 
+  // Detailed History for interactive SVG charts (50 points)
+  const [detailedHistory, setDetailedHistory] = useState(
+    Array(50).fill(0).map((_, i) => {
+      const timeOffset = (50 - i) * 2000;
+      const t = new Date(Date.now() - timeOffset);
+      const timeStr = t.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      return {
+        timestamp: timeStr,
+        loaded: 249444 - Math.round((50 - i) * 250 * 0.9 * 2), // Backtrack from default loadedCount
+        throughput: Math.round(250 + (Math.random() - 0.5) * 40),
+        quarantine: parseFloat((10.19 + (Math.random() - 0.5) * 2).toFixed(2))
+      };
+    })
+  );
+
+  const [visibleMetrics, setVisibleMetrics] = useState({
+    loaded: true,
+    throughput: true,
+    quarantine: true
+  });
+
+  const [hoveredIdx, setHoveredIdx] = useState(null);
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
+
   // Search filters
   const [nebulaSearch, setNebulaSearch] = useState('');
   const [asteroidSearch, setAsteroidSearch] = useState('');
@@ -440,19 +464,39 @@ export default function App() {
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500);
   }, []);
 
-  // Update sparkline history on metric changes
+  // Update sparkline history and detailed history on metric changes
   useEffect(() => {
-    if (!isGenerating) return;
-    const intervalId = setInterval(() => {
-      setSparkHistory(prev => ({
-        loaded: [...prev.loaded.slice(1), Math.min(100, (metrics.loadedCount / 3000) % 100)],
-        throughput: [...prev.throughput.slice(1), Math.min(100, (metrics.ingestRate / 5) % 100)],
-        quarantine: [...prev.quarantine.slice(1), Math.min(100, metrics.quarantineRate * 5)],
-        runs: [...prev.runs.slice(1), Math.min(100, (metrics.successRuns % 50) * 2)]
-      }));
-    }, 2000);
-    return () => clearInterval(intervalId);
-  }, [isGenerating, metrics.loadedCount, metrics.ingestRate, metrics.quarantineRate, metrics.successRuns]);
+    const nowStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    
+    setSparkHistory(prev => ({
+      loaded: [...prev.loaded.slice(1), Math.min(100, (metrics.loadedCount / 3000) % 100)],
+      throughput: [...prev.throughput.slice(1), Math.min(100, (metrics.ingestRate / 5) % 100)],
+      quarantine: [...prev.quarantine.slice(1), Math.min(100, metrics.quarantineRate * 5)],
+      runs: [...prev.runs.slice(1), Math.min(100, (metrics.successRuns % 50) * 2)]
+    }));
+
+    setDetailedHistory(prev => {
+      if (prev.length > 0 && prev[prev.length - 1].timestamp === nowStr) {
+        const updated = [...prev];
+        updated[updated.length - 1] = {
+          timestamp: nowStr,
+          loaded: metrics.loadedCount,
+          throughput: metrics.ingestRate,
+          quarantine: metrics.quarantineRate
+        };
+        return updated;
+      }
+      return [
+        ...prev.slice(1),
+        {
+          timestamp: nowStr,
+          loaded: metrics.loadedCount,
+          throughput: metrics.ingestRate,
+          quarantine: metrics.quarantineRate
+        }
+      ];
+    });
+  }, [metrics.loadedCount, metrics.ingestRate, metrics.quarantineRate, metrics.successRuns]);
 
   // Toggle service status
   const toggleComponentStatus = (id) => {
@@ -1107,6 +1151,327 @@ export default function App() {
                   </div>
                 </div>
               </div>
+
+              {/* Telemetry Trend Chart */}
+              {(() => {
+                const svgWidth = 800;
+                const svgHeight = 220;
+                const paddingX = 45;
+                const paddingY = 25;
+
+                const tValues = detailedHistory.map(d => d.throughput);
+                const maxT = Math.max(...tValues, 500);
+                const minT = 0;
+
+                const lValues = detailedHistory.map(d => d.loaded);
+                const maxL = Math.max(...lValues);
+                const minL = Math.min(...lValues);
+
+                const qValues = detailedHistory.map(d => d.quarantine);
+                const maxQ = Math.max(...qValues, 20);
+                const minQ = 0;
+
+                const getCoordinates = (value, minVal, maxVal) => {
+                  const range = maxVal - minVal || 1;
+                  const norm = (value - minVal) / range;
+                  return svgHeight - paddingY - norm * (svgHeight - 2 * paddingY);
+                };
+
+                const points = detailedHistory.map((d, i) => {
+                  const x = paddingX + (i * (svgWidth - 2 * paddingX) / (detailedHistory.length - 1));
+                  return {
+                    x,
+                    yT: getCoordinates(d.throughput, minT, maxT),
+                    yL: getCoordinates(d.loaded, minL, maxL),
+                    yQ: getCoordinates(d.quarantine, minQ, maxQ),
+                    data: d
+                  };
+                });
+
+                const pathT = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.yT.toFixed(1)}`).join(' ');
+                const pathAreaT = `${pathT} L ${(svgWidth - paddingX).toFixed(1)} ${(svgHeight - paddingY).toFixed(1)} L ${paddingX} ${(svgHeight - paddingY).toFixed(1)} Z`;
+
+                const pathL = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.yL.toFixed(1)}`).join(' ');
+                const pathAreaL = `${pathL} L ${(svgWidth - paddingX).toFixed(1)} ${(svgHeight - paddingY).toFixed(1)} L ${paddingX} ${(svgHeight - paddingY).toFixed(1)} Z`;
+
+                const pathQ = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.yQ.toFixed(1)}`).join(' ');
+                const pathAreaQ = `${pathQ} L ${(svgWidth - paddingX).toFixed(1)} ${(svgHeight - paddingY).toFixed(1)} L ${paddingX} ${(svgHeight - paddingY).toFixed(1)} Z`;
+
+                const activeP = hoveredIdx !== null && hoveredIdx < points.length ? points[hoveredIdx] : null;
+
+                return (
+                  <div className="telemetry-trend-card" style={{ marginTop: 24 }}>
+                    {/* SVG Glow Filter definitions */}
+                    <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+                      <defs>
+                        <filter id="glow-sapphire" x="-20%" y="-20%" width="140%" height="140%">
+                          <feGaussianBlur stdDeviation="4" result="blur" />
+                          <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                          </feMerge>
+                        </filter>
+                        <filter id="glow-emerald" x="-20%" y="-20%" width="140%" height="140%">
+                          <feGaussianBlur stdDeviation="4" result="blur" />
+                          <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                          </feMerge>
+                        </filter>
+                        <filter id="glow-crimson" x="-20%" y="-20%" width="140%" height="140%">
+                          <feGaussianBlur stdDeviation="4" result="blur" />
+                          <feMerge>
+                            <feMergeNode in="blur" />
+                            <feMergeNode in="SourceGraphic" />
+                          </feMerge>
+                        </filter>
+                        <linearGradient id="area-grad-sapphire" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="var(--sapphire)" stopOpacity="0.25"/>
+                          <stop offset="100%" stopColor="var(--sapphire)" stopOpacity="0"/>
+                        </linearGradient>
+                        <linearGradient id="area-grad-emerald" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="var(--emerald)" stopOpacity="0.25"/>
+                          <stop offset="100%" stopColor="var(--emerald)" stopOpacity="0"/>
+                        </linearGradient>
+                        <linearGradient id="area-grad-crimson" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="var(--crimson)" stopOpacity="0.25"/>
+                          <stop offset="100%" stopColor="var(--crimson)" stopOpacity="0"/>
+                        </linearGradient>
+                      </defs>
+                    </svg>
+
+                    <div className="chart-header">
+                      <div>
+                        <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                          Stellar Fusion Telemetry
+                        </h3>
+                        <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 4 }}>
+                          Continuous time-series analysis of core throughput, db event persistence, and quarantine rates.
+                        </p>
+                      </div>
+                      <div className="chart-legend">
+                        <div 
+                          className={`legend-item ${!visibleMetrics.throughput ? 'inactive' : ''}`}
+                          onClick={() => setVisibleMetrics(prev => ({ ...prev, throughput: !prev.throughput }))}
+                        >
+                          <div className="legend-dot green"></div>
+                          <span>Throughput ({metrics.ingestRate} evt/s)</span>
+                        </div>
+                        <div 
+                          className={`legend-item ${!visibleMetrics.loaded ? 'inactive' : ''}`}
+                          onClick={() => setVisibleMetrics(prev => ({ ...prev, loaded: !prev.loaded }))}
+                        >
+                          <div className="legend-dot blue"></div>
+                          <span>DB Loaded ({metrics.loadedCount.toLocaleString()})</span>
+                        </div>
+                        <div 
+                          className={`legend-item ${!visibleMetrics.quarantine ? 'inactive' : ''}`}
+                          onClick={() => setVisibleMetrics(prev => ({ ...prev, quarantine: !prev.quarantine }))}
+                        >
+                          <div className="legend-dot red"></div>
+                          <span>Quarantine ({metrics.quarantineRate}%)</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="chart-svg-container">
+                      <svg 
+                        viewBox={`0 0 ${svgWidth} ${svgHeight}`} 
+                        className="chart-svg"
+                        onMouseLeave={() => setHoveredIdx(null)}
+                      >
+                        {/* Grid Lines */}
+                        {[0.25, 0.50, 0.75].map((ratio, idx) => {
+                          const y = paddingY + ratio * (svgHeight - 2 * paddingY);
+                          return (
+                            <line 
+                              key={idx}
+                              x1={paddingX} 
+                              y1={y} 
+                              x2={svgWidth - paddingX} 
+                              y2={y} 
+                              className="chart-grid-line dashed" 
+                            />
+                          );
+                        })}
+
+                        {/* X-Axis ticks and labels */}
+                        {points.filter((_, idx) => idx % 10 === 0).map((p, idx) => (
+                          <g key={idx}>
+                            <line 
+                              x1={p.x} 
+                              y1={svgHeight - paddingY} 
+                              x2={p.x} 
+                              y2={svgHeight - paddingY + 5} 
+                              stroke="rgba(255, 255, 255, 0.15)"
+                            />
+                            <text 
+                              x={p.x} 
+                              y={svgHeight - paddingY + 16} 
+                              textAnchor="middle" 
+                              className="chart-axis-text"
+                            >
+                              {p.data.timestamp}
+                            </text>
+                          </g>
+                        ))}
+
+                        {/* Y-Axis labels (Left: Throughput, Right: Quarantine) */}
+                        {visibleMetrics.throughput && (
+                          <>
+                            <text x={10} y={paddingY + 4} className="chart-axis-text" textAnchor="start">
+                              {Math.round(maxT)} evt/s
+                            </text>
+                            <text x={10} y={svgHeight - paddingY + 4} className="chart-axis-text" textAnchor="start">
+                              0 evt/s
+                            </text>
+                          </>
+                        )}
+                        {visibleMetrics.quarantine && (
+                          <>
+                            <text x={svgWidth - 10} y={paddingY + 4} className="chart-axis-text" textAnchor="end">
+                              {maxQ.toFixed(1)}%
+                            </text>
+                            <text x={svgWidth - 10} y={svgHeight - paddingY + 4} className="chart-axis-text" textAnchor="end">
+                              0.0%
+                            </text>
+                          </>
+                        )}
+
+                        {/* Data Areas & Lines */}
+                        {/* DB Loaded (Blue) */}
+                        {visibleMetrics.loaded && (
+                          <g>
+                            <path d={pathAreaL} fill="url(#area-grad-sapphire)" className="chart-area" />
+                            <path d={pathL} stroke="var(--sapphire)" filter="url(#glow-sapphire)" className="chart-line" />
+                          </g>
+                        )}
+
+                        {/* Throughput (Green) */}
+                        {visibleMetrics.throughput && (
+                          <g>
+                            <path d={pathAreaT} fill="url(#area-grad-emerald)" className="chart-area" />
+                            <path d={pathT} stroke="var(--emerald)" filter="url(#glow-emerald)" className="chart-line" />
+                          </g>
+                        )}
+
+                        {/* Quarantine Rate (Red) */}
+                        {visibleMetrics.quarantine && (
+                          <g>
+                            <path d={pathAreaQ} fill="url(#area-grad-crimson)" className="chart-area" />
+                            <path d={pathQ} stroke="var(--crimson)" filter="url(#glow-crimson)" className="chart-line" />
+                          </g>
+                        )}
+
+                        {/* Hover elements */}
+                        {activeP && (
+                          <g>
+                            <line 
+                              x1={activeP.x} 
+                              y1={paddingY} 
+                              x2={activeP.x} 
+                              y2={svgHeight - paddingY} 
+                              className="chart-hover-line" 
+                            />
+                            
+                            {visibleMetrics.loaded && (
+                              <g>
+                                <circle cx={activeP.x} cy={activeP.yL} r={8} className="chart-hover-dot-halo" stroke="var(--sapphire)" />
+                                <circle cx={activeP.x} cy={activeP.yL} r={4} className="chart-hover-dot" fill="var(--sapphire)" stroke="#0a0f1e" />
+                              </g>
+                            )}
+
+                            {visibleMetrics.throughput && (
+                              <g>
+                                <circle cx={activeP.x} cy={activeP.yT} r={8} className="chart-hover-dot-halo" stroke="var(--emerald)" />
+                                <circle cx={activeP.x} cy={activeP.yT} r={4} className="chart-hover-dot" fill="var(--emerald)" stroke="#0a0f1e" />
+                              </g>
+                            )}
+
+                            {visibleMetrics.quarantine && (
+                              <g>
+                                <circle cx={activeP.x} cy={activeP.yQ} r={8} className="chart-hover-dot-halo" stroke="var(--crimson)" />
+                                <circle cx={activeP.x} cy={activeP.yQ} r={4} className="chart-hover-dot" fill="var(--crimson)" stroke="#0a0f1e" />
+                              </g>
+                            )}
+                          </g>
+                        )}
+
+                        {/* Invisible Hover Rectangles */}
+                        {points.map((p, i) => {
+                          const w = (svgWidth - 2 * paddingX) / (points.length - 1);
+                          const xStart = p.x - w / 2;
+                          return (
+                            <rect
+                              key={i}
+                              x={xStart}
+                              y={0}
+                              width={w}
+                              height={svgHeight}
+                              fill="transparent"
+                              style={{ cursor: 'crosshair' }}
+                              onMouseEnter={() => setHoveredIdx(i)}
+                              onMouseMove={(e) => {
+                                const rect = e.currentTarget.parentNode.getBoundingClientRect();
+                                const tooltipX = e.clientX - rect.left + 15;
+                                const tooltipY = e.clientY - rect.top - 95;
+                                setTooltipPos({ x: tooltipX, y: tooltipY });
+                              }}
+                            />
+                          );
+                        })}
+                      </svg>
+
+                      {/* Tooltip HTML Box */}
+                      {activeP && (
+                        <div 
+                          className="chart-tooltip"
+                          style={{ 
+                            left: tooltipPos.x, 
+                            top: tooltipPos.y,
+                            opacity: 1
+                          }}
+                        >
+                          <span className="tooltip-time">{activeP.data.timestamp}</span>
+                          {visibleMetrics.throughput && (
+                            <div className="tooltip-row">
+                              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <span className="legend-dot green" style={{ width: 6, height: 6 }}></span>
+                                Ingest Rate:
+                              </span>
+                              <span className="tooltip-value" style={{ color: 'var(--emerald)' }}>
+                                {activeP.data.throughput} evt/s
+                              </span>
+                            </div>
+                          )}
+                          {visibleMetrics.loaded && (
+                            <div className="tooltip-row">
+                              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <span className="legend-dot blue" style={{ width: 6, height: 6 }}></span>
+                                DB Loaded:
+                              </span>
+                              <span className="tooltip-value" style={{ color: 'var(--sapphire)' }}>
+                                {activeP.data.loaded.toLocaleString()}
+                              </span>
+                            </div>
+                          )}
+                          {visibleMetrics.quarantine && (
+                            <div className="tooltip-row">
+                              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <span className="legend-dot red" style={{ width: 6, height: 6 }}></span>
+                                Quarantine:
+                              </span>
+                              <span className="tooltip-value" style={{ color: 'var(--crimson)' }}>
+                                {activeP.data.quarantine}%
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Two-Column: Stages + Controls */}
               <div className="two-col">

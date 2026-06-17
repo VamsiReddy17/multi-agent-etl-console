@@ -59,6 +59,7 @@
 | `api/server.py` | ✅ | Session 13 | FastAPI endpoints /health, /pipeline/run, /pipeline/status |
 | `scripts/load_test.py` | ✅ | Session 14 | Benchmarking script that generates 10,000 orders and measures parametric throughput |
 | `wip/LOAD_TEST_RESULTS.md` | ✅ | Session 14 | Performance comparison report detailing optimal batch size suggestions |
+| Interactive SVG Telemetry Charts | ✅ | Session 16 | Real-time trend visualizer with hoversnapping, dynamic scaling, glassmorphic tooltips, and legend toggles |
 
 ---
 
@@ -69,6 +70,7 @@
 | `airflow/dags/streaming_etl_dag.py` | ✅ | Session 1 / 11 | Every 5 min, now featuring KafkaTopicSensor and parallel DLQ task |
 | `airflow/dags/batch_orders_dag.py` | ✅ | Session 1 | Daily midnight, reprocess unprocessed events |
 | `airflow/dags/retry_dlq_dag.py` | ✅ | Session 14 | Consumes from dead_letter topic hourly to validate and retry |
+| `airflow/dags/warehouse_audit_dag.py` | ✅ | Session 16 | Expanded row-count scorecard checks to include quarantine_events, permanent_failures, and quality_report |
 | `airflow/plugins/kafka_topic_sensor.py` | ✅ | Session 11 | Custom sensor checking unconsumed messages without advancing offsets |
 | `airflow/plugins/__init__.py` | ✅ | Session 11 | Registers the `KafkaTopicSensor` plugin in Airflow |
 

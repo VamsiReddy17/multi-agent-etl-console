@@ -95,6 +95,7 @@
 | Implement containerized FastAPI REST API layer | ✅ | Session 13 |
 | Ingest 10,000 Kafka events and run parametric load test | ✅ | Session 14 |
 | Implement DLQ retry loop & permanent failures database routing | ✅ | Session 14 |
+| Implement interactive SVG telemetry trend charts | ✅ | Session 16 |
 
 ---
 

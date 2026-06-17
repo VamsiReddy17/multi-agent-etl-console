@@ -2095,6 +2095,181 @@ input[type="range"]::-webkit-slider-thumb {
   }
 }
 
+/* ── 30. Telemetry Trend Chart ───────────────────────────────────────────────── */
+.telemetry-trend-card {
+  position: relative;
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: var(--shadow-lg);
+  overflow: visible;
+  transition: transform 200ms ease, border-color 200ms ease;
+}
+
+.telemetry-trend-card:hover {
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: all 200ms ease;
+  user-select: none;
+}
+
+.legend-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+  color: var(--text-primary);
+}
+
+.legend-item.inactive {
+  opacity: 0.35;
+  text-decoration: line-through;
+  background: transparent;
+  border-color: transparent;
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.legend-dot.blue { background: var(--sapphire); box-shadow: 0 0 8px var(--sapphire-glow); }
+.legend-dot.green { background: var(--emerald); box-shadow: 0 0 8px var(--emerald-glow); }
+.legend-dot.red { background: var(--crimson); box-shadow: 0 0 8px var(--crimson-glow); }
+
+.chart-svg-container {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  user-select: none;
+}
+
+.chart-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.chart-grid-line {
+  stroke: rgba(255, 255, 255, 0.06);
+  stroke-width: 1;
+}
+
+.chart-grid-line.dashed {
+  stroke-dasharray: 4 4;
+}
+
+.chart-axis-text {
+  font-size: 0.7rem;
+  fill: var(--text-muted);
+  font-family: var(--font-mono);
+}
+
+.chart-line {
+  fill: none;
+  stroke-width: 2.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  transition: stroke-dasharray 0.3s ease;
+}
+
+.chart-area {
+  stroke: none;
+  transition: opacity 0.3s ease;
+}
+
+.chart-hover-line {
+  stroke: rgba(255, 255, 255, 0.2);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+  pointer-events: none;
+}
+
+.chart-hover-dot {
+  stroke-width: 2;
+  transition: r 0.1s ease;
+}
+
+.chart-hover-dot-halo {
+  fill: none;
+  stroke-width: 1.5;
+  opacity: 0.5;
+  animation: pulse-halo 1.8s infinite ease-out;
+}
+
+@keyframes pulse-halo {
+  0% { r: 4; opacity: 0.8; }
+  100% { r: 14; opacity: 0; }
+}
+
+/* Floating Tooltip */
+.chart-tooltip {
+  position: absolute;
+  pointer-events: none;
+  background: rgba(10, 15, 30, 0.88);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: var(--text-primary);
+  font-size: 0.75rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 15px rgba(255, 255, 255, 0.02);
+  z-index: 100;
+  transition: transform 0.08s ease, opacity 0.15s ease;
+  min-width: 190px;
+}
+
+.tooltip-time {
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  padding-bottom: 5px;
+  margin-bottom: 6px;
+  display: block;
+  font-weight: 500;
+}
+
+.tooltip-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 4px 0;
+}
+
+.tooltip-value {
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
 /* ── 31. Print Styles ────────────────────────────────────────────────────────── */
 @media print {
   .cosmos-sidebar,

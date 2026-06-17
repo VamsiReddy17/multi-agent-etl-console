@@ -36,6 +36,9 @@ def run_dw_audit(**context) -> str:
         "order_events": "SELECT COUNT(*) FROM warehouse.order_events;",
         "orders": "SELECT COUNT(*) FROM warehouse.orders;",
         "pipeline_execution": "SELECT COUNT(*) FROM warehouse.pipeline_execution;",
+        "quarantine_events": "SELECT COUNT(*) FROM warehouse.quarantine_events;",
+        "permanent_failures": "SELECT COUNT(*) FROM warehouse.permanent_failures;",
+        "quality_report": "SELECT COUNT(*) FROM warehouse.quality_report;",
     }
     
     log.info("Starting Data Warehouse Audit Routine...")
@@ -65,6 +68,9 @@ def run_dw_audit(**context) -> str:
   * warehouse.order_events:     {scorecard['order_events'] if scorecard['order_events'] >= 0 else 'ERROR'} rows
   * warehouse.orders (facts):   {scorecard['orders'] if scorecard['orders'] >= 0 else 'ERROR'} rows
   * warehouse.pipeline_execs:   {scorecard['pipeline_execution'] if scorecard['pipeline_execution'] >= 0 else 'ERROR'} rows
+  * warehouse.quarantine_evts:  {scorecard['quarantine_events'] if scorecard['quarantine_events'] >= 0 else 'ERROR'} rows
+  * warehouse.perm_failures:    {scorecard['permanent_failures'] if scorecard['permanent_failures'] >= 0 else 'ERROR'} rows
+  * warehouse.quality_reports:  {scorecard['quality_report'] if scorecard['quality_report'] >= 0 else 'ERROR'} rows
 {banner}
     Audit verification result: PASSED (Integrity check OK)
 {banner}
