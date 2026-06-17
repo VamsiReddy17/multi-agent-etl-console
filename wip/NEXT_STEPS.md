@@ -53,10 +53,6 @@
 - Update pipeline config to support GCP targets
 - See `docs/BIGQUERY_MIGRATION.md`
 
-### [ ] Cloud Pub/Sub support
-- Add `pubsub_ingestion_agent.py` as alternative to Kafka
-- Environment flag to switch between Kafka and Pub/Sub
-
 ### [ ] API layer
 - Add a FastAPI REST endpoint to trigger pipeline runs on-demand
 - `POST /pipeline/run` → triggers `streaming_etl.run_once()`
