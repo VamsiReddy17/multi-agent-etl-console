@@ -664,6 +664,9 @@ docker exec prod_api pytest tests/ -v
 - Configured style rules and animations in `index.css`.
 - Compiled the production dashboard.
 - Extended `warehouse_audit_dag.py` to audit and print scorecard metrics for the three newly integrated tables (`quarantine_events`, `permanent_failures`, and `quality_report`).
+- Created root directory `bigquery/` to store raw event schemas and reporting views.
+- Implemented incremental replication Airflow DAG `postgres_to_bigquery_sync.py` utilizing GCS staging and table watermarking.
+- Updated `docs/BIGQUERY_MIGRATION.md` with incremental replication guidelines.
 
 ### 💻 Commands Run
 ```bash

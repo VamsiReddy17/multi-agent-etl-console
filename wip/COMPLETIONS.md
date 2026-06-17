@@ -31,6 +31,7 @@
 | `docker-compose.yml (API update)` | ✅ | Session 13 | Adds containerized `api` service mapping host port `8081` |
 | `docker-compose.yml (Volume updates)` | ✅ | Session 14 | Mounts scripts, tests, and wip volumes to the API service container |
 | `scripts/create_topics.sh` (dead_letter update) | ✅ | Session 11 | Configures and creates `dead_letter` Kafka topic |
+| `bigquery/` folder (schemas + views) | ✅ | Session 16 | Schema DDL for raw.order_events and reporting views |
 
 ---
 
@@ -60,6 +61,7 @@
 | `scripts/load_test.py` | ✅ | Session 14 | Benchmarking script that generates 10,000 orders and measures parametric throughput |
 | `wip/LOAD_TEST_RESULTS.md` | ✅ | Session 14 | Performance comparison report detailing optimal batch size suggestions |
 | Interactive SVG Telemetry Charts | ✅ | Session 16 | Real-time trend visualizer with hoversnapping, dynamic scaling, glassmorphic tooltips, and legend toggles |
+| `airflow/dags/postgres_to_bigquery_sync.py` | ✅ | Session 16 | Incremental ELT sync DAG using watermarks and GCS staging |
 
 ---
 

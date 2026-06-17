@@ -117,4 +117,25 @@ GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
 GCP_PROJECT_ID=your-project-id
 BQ_DATASET=warehouse
 PUBSUB_TOPIC_ORDERS=projects/your-project/topics/orders
+
+---
+
+## PostgreSQL to BigQuery ELT Sync (Batch Replication)
+
+For cost-effective free-tier data warehousing and Looker Studio reporting, a batch ELT pipeline is implemented to sync PostgreSQL order events incrementally into Google BigQuery:
+
+### 1. Watermark Sync DAG
+- **DAG File**: [postgres_to_bigquery_sync.py](file:///Users/vamsireddy/Desktop/Agents%20Dev/production-pipeline/airflow/dags/postgres_to_bigquery_sync.py)
+- **Replication Flow**:
+  1. **Watermark Probe**: Queries the target BigQuery table `raw.order_events` to retrieve the latest `received_at` timestamp.
+  2. **Incremental Extract**: Queries PostgreSQL table `warehouse.order_events` where `received_at > last_watermark` and saves it locally in JSON lines format.
+  3. **Stage**: Uploads the JSON lines file to Google Cloud Storage (GCS).
+  4. **Load**: Triggers BigQuery to bulk load the staged JSON lines from GCS into the `raw.order_events` table.
+
+### 2. BigQuery Transformations (T in ELT)
+SQL definitions and dimensional views are located in:
+- [order_events.sql](file:///Users/vamsireddy/Desktop/Agents%20Dev/production-pipeline/bigquery/schema/order_events.sql)
+- [reporting_views.sql](file:///Users/vamsireddy/Desktop/Agents%20Dev/production-pipeline/bigquery/transformations/reporting_views.sql)
+
+Looker Studio connects directly to the reporting view `warehouse.orders_reporting` to render metrics without running queries on the raw table.
 ```

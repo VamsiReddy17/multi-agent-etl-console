@@ -96,6 +96,7 @@
 | Ingest 10,000 Kafka events and run parametric load test | ✅ | Session 14 |
 | Implement DLQ retry loop & permanent failures database routing | ✅ | Session 14 |
 | Implement interactive SVG telemetry trend charts | ✅ | Session 16 |
+| Implement PostgreSQL to BigQuery incremental ELT sync pipeline | ✅ | Session 16 |
 
 ---
 
