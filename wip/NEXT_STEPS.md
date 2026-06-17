@@ -48,11 +48,6 @@
 
 ## 🔵 Priority 4 — Low (Future Sessions)
 
-### [ ] API layer
-- Add a FastAPI REST endpoint to trigger pipeline runs on-demand
-- `POST /pipeline/run` → triggers `streaming_etl.run_once()`
-- `GET /pipeline/status` → returns latest `pipeline_execution` row
-
 ### [ ] Load testing
 - Produce 10,000 messages to Kafka
 - Measure pipeline throughput (rows/second)
@@ -104,6 +99,7 @@
 | Add dead letter queue routing to dead_letter topic | ✅ | Session 11 |
 | Add data quality report persistence to Postgres | ✅ | Session 11 |
 | Implement BigQueryLoadAgent and target routing | ✅ | Session 12 |
+| Implement containerized FastAPI REST API layer | ✅ | Session 13 |
 
 ---
 

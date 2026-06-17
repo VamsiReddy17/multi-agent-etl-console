@@ -558,6 +558,48 @@ git status
 
 ---
 
+## Session 13 — 2026-06-17
+
+**IDE**: Antigravity
+**Developer**: Vamsi Reddy
+**Goal**: Implement a containerized FastAPI REST API layer (`prod_api` service) on host port `8081` to trigger ETL pipeline executions (`POST /pipeline/run`) and fetch the latest run metadata (`GET /pipeline/status`) from the active database target.
+
+### 🔍 Activities
+- **Dependency Ingest**: Added `fastapi==0.95.0` and `uvicorn==0.22.0` to `requirements.txt`.
+- **Docker Compose Update**: Defined the `api` container service in `docker-compose.yml` forwarding port `8081` from the host.
+- **REST Endpoints Implementation**: Created `api/__init__.py` and `api/server.py` implementing `/health`, `/pipeline/run`, and `/pipeline/status` with dynamic target DB routing (Postgres/BigQuery).
+- **Test Suite Integration**: Developed a mock-based unit test suite `tests/test_api.py` targeting the route handlers directly to prevent Starlette-HTTPX version clashes.
+- **Verification**: Copied updated tests to the container and ran `pytest`. All 54 tests pass cleanly. Tested HTTP routes via host `curl` successfully.
+
+### 💻 Commands Run
+```bash
+docker exec prod_api pytest tests/ -v
+curl -s http://localhost:8081/health
+curl -s http://localhost:8081/pipeline/status
+```
+
+### 📤 Outputs / Results
+- Pytest: 54 passed in 1.23s.
+- Health: `{"status":"healthy","timestamp":"2026-06-17T07:10:55.601924+00:00"}`.
+- Status: Returns the JSON run log: `{"pipeline_name":"streaming-etl","start_time":"2026-06-17T07:09:10.647929","end_time":"2026-06-17T07:09:15.768441","status":"success","rows_processed":9005,"error_message":null}`.
+
+### ⚠️ Issues Hit
+- Starlette `TestClient` threw `TypeError: __init__() got an unexpected keyword argument 'app'` inside the python container due to an HTTPX/Starlette library conflict.
+- Stale tests inside container due to volume mapping exclusions.
+
+### 🔧 Fixes Applied
+- Bypassed Starlette `TestClient` by directly testing the route handler functions (`health`, `trigger_run`, `get_status`) in `tests/test_api.py`.
+- Copied updated `tests/test_api.py` into container using `docker cp`.
+
+### ✅ Completions This Session
+- Implemented and verified containerized FastAPI REST API layer on port 8081.
+- Updated project checklists, completions, and session logs.
+
+### 📋 Pending for Next Session
+- Low Priority 4 roadmap: Load Testing and Retry Dead-Letter Records.
+
+---
+
 ## Template for Future Sessions
 
 ```markdown

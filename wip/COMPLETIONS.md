@@ -28,6 +28,7 @@
 | `monitoring/dashboard/src/index.css` (Cosmos) | ✅ | Session 10 | Renamed all fable classes and style tokens to Cosmos |
 | `monitoring/dashboard/src/App.jsx` (Cosmos) | ✅ | Session 10 | Refactored active states, headers, and Command Palette targets |
 | `postgres/init.sql` (quality table updates) | ✅ | Session 11 | Added `warehouse.quality_report` table DDL |
+| `docker-compose.yml (API update)` | ✅ | Session 13 | Adds containerized `api` service mapping host port `8081` |
 | `scripts/create_topics.sh` (dead_letter update) | ✅ | Session 11 | Configures and creates `dead_letter` Kafka topic |
 
 ---
@@ -53,6 +54,7 @@
 |------|-----------|---------|-------|
 | `pipelines/streaming_etl.py` | ✅ | Session 1 / 11 | run_once + run_loop + CLI entry point, and Session 11 DLQ integration |
 | `pipelines/config/pipeline_config.yaml` | ✅ | Session 1 | Batch size, thresholds, intervals |
+| `api/server.py` | ✅ | Session 13 | FastAPI endpoints /health, /pipeline/run, /pipeline/status |
 
 ---
 
@@ -80,6 +82,7 @@
 | `tests/test_dlq_agent.py` | ✅ Passed | Session 11 | ✅ Live verified |
 | `tests/test_topic_sensor.py` | ✅ Passed | Session 11 | ✅ Live verified |
 | `tests/test_bigquery_agent.py` | ✅ Passed | Session 12 | ✅ Live verified |
+| `tests/test_api.py` | ✅ Passed | Session 13 | ✅ Live verified |
 
 ---
 
@@ -136,3 +139,4 @@
 | Data visible in PostgreSQL | ✅ Passed | Session 4, 5 & 6 | Verified database loads climbing continuously (109,000+ rows) |
 | Prometheus scraping status | ✅ UP | Session 4, 5 & 6 | `airflow_webserver:8000` target UP |
 | Grafana dashboard preloaded | ✅ Passed | Session 4, 5 & 6 | Dashboard rendering live non-zero charts |
+| API layer response validation | ✅ Passed | Session 13 | Tested `/health`, `/pipeline/status`, and `/pipeline/run` successfully |

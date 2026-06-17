@@ -138,4 +138,5 @@ The local ecosystem exposes the following active interfaces once bootstrapped:
 | **Grafana Analytics Charts** | `3000` | [http://localhost:3000](http://localhost:3000) *(User: admin / Pass: admin)* |
 | **Prometheus Telemetry Scraper** | `9090` | [http://localhost:9090](http://localhost:9090) |
 | **ETL Metrics Endpoint** | `8000` | [http://localhost:8000/metrics](http://localhost:8000/metrics) |
+| **FastAPI REST API Layer** | `8081` | [http://localhost:8081](http://localhost:8081) |
 | **PostgreSQL Data Warehouse** | `5432` | `localhost:5432` *(User: postgres / Pass: postgres_password)* |
