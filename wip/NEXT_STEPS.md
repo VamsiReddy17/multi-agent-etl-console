@@ -66,11 +66,6 @@
 - Add `pubsub_ingestion_agent.py` as alternative to Kafka
 - Environment flag to switch between Kafka and Pub/Sub
 
-### [ ] CI/CD pipeline
-- Add `.github/workflows/ci.yml`
-- Run `pytest tests/ -v` on every push
-- Build Docker image and push to registry
-
 ### [ ] API layer
 - Add a FastAPI REST endpoint to trigger pipeline runs on-demand
 - `POST /pipeline/run` → triggers `streaming_etl.run_once()`
@@ -118,6 +113,10 @@
 | Build premium Material 3 React Monitoring Dashboard | ✅ | Session 6 |
 | Create AGENT_KNOWLEDGE.md mistake tracking system | ✅ | Session 6 |
 | Build E2E automated start/stop orchestrators | ✅ | Session 6 |
+| Configure Git repository & push to GitHub | ✅ | Session 7 |
+| Build GitHub Actions CI workflow (`ci.yml`) | ✅ | Session 7 |
+| Add CONTRIBUTING.md & SECURITY.md guidelines | ✅ | Session 7 |
+| Design & Build Phase 3 "The Observatory" | ✅ | Session 9 |
 
 ---
 

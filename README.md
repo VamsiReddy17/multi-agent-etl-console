@@ -150,6 +150,7 @@ multi-agent-etl-console/
 ├── agents/ ...................... Specialized Python Ingestion, Transform, Quality & Load Agents
 ├── airflow/ ..................... Airflow Webserver, Scheduler, Worker and Celery configs & DAGs
 ├── architecture/ ................ E2E Architecture diagrams, flow definitions, and layout mockups
+├── design-ui/ ................... UI/UX design system, phase docs, mockups, and industry research
 ├── docs/ ........................ Detailed Guides (Kafka setup, Airflow integrations, cloud scale)
 ├── monitoring/ .................. Prometheus scrape rules, Grafana dashboards, and Fable React Dashboard
 ├── pipelines/ ................... Core streaming orchestrators and pipeline configuration YAMLs
@@ -168,7 +169,7 @@ Once bootstrapped, your local development workspace exposes the following endpoi
 
 | Interface / Service | Local Port | URL | Description |
 |---------------------|------------|-----|-------------|
-| **Fable Dashboard** | `8082` | [http://localhost:8082](http://localhost:8082) | Cinematic development chronicle UI |
+| **Fable Dashboard** | `5173` | [http://localhost:5173](http://localhost:5173) | Cinematic development chronicle UI |
 | **Apache Airflow Web UI** | `8080` | [http://localhost:8080](http://localhost:8080) | DAG scheduling & loop logs (`airflow/airflow`) |
 | **Grafana Analytics** | `3000` | [http://localhost:3000](http://localhost:3000) | Live preloaded metrics charts (`admin/admin`) |
 | **Prometheus Telemetry** | `9090` | [http://localhost:9090](http://localhost:9090) | Target metrics scraper dashboard |

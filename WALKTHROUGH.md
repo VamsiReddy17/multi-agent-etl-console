@@ -1,7 +1,7 @@
 # 🚀 Multi-Agent Pipeline & React Monitor — E2E Walkthrough
 
 Welcome to the **Production-Ready Multi-Agent Data Engineering Pipeline**! 
-This project features a real-time event-streaming pipeline (polling Kafka, transforming, validating, and loading to a PostgreSQL Data Warehouse) monitored by a premium **Google Material 3 React System Dashboard** on port `8082`.
+This project features a real-time event-streaming pipeline (polling Kafka, transforming, validating, and loading to a PostgreSQL Data Warehouse) monitored by a premium, cinematic **Fable Development Chronicle Dashboard** on port `5173`.
 
 ---
 
@@ -18,7 +18,7 @@ This project features a real-time event-streaming pipeline (polling Kafka, trans
            ↓
     PostgreSQL Loader    ← high-performance bulk database insertions
            ↓
-  PostgreSQL Warehouse   ← grows past 249,000+ loaded order events!
+  PostgreSQL Warehouse   ← grows past 109,000+ loaded order events!
 ```
 
 ---
@@ -67,50 +67,72 @@ If you prefer to run them from your terminal:
 
 ---
 
-## 🌐 2. Exposing the Google Material 3 Dashboard
+## 🌐 2. Exposing the Fable & Observatory Dashboard
 
-Once booted, the high-fidelity system monitor dashboard is served on **port `8082`**:
-👉 **Open your browser and navigate to**: **[http://localhost:8082](http://localhost:8082)**
+Once booted, the high-fidelity system monitor dashboard is served on **port `5173`**:
+👉 **Open your browser and navigate to**: **[http://localhost:5173](http://localhost:5173)**
 
-### Key Features:
-* **Active Status Bar**: Displays active system operational state and running environment details.
-* **Component Matrix**: Grid displaying Zookeeper, Kafka, Redis, Airflow, Agents, Postgres, Prometheus, and Grafana. Click any card to expand its **Side Sheet Details Panel** showing active port mappings, ping, and configuration details!
-* **Live Ingestion Canvas**: Watch data packets move through the processing stages in real-time. Green nodes indicate healthy flows, while anomalies visually branch off to represent validation filters.
-* **NEW - Interactive Ingestion Controllers**:
-  * **Event Stream Switch**: Toggle simulated telemetry generation directly from the UI.
-  * **Velocity Range Slider**: Adjust throughput dynamically from 10 events/s to 1,000 events/s.
-  * **Anomaly Injector**: Scale malformed packet injection from 0% to 50% in real-time. Exceeding 20% displays a flashing red warning banner!
-* **NEW - Real-Time STDOUT Stream Terminal**:
-  * A monospace virtual terminal displaying live stdout logs (Kafka partition offsets, agent batch processes, isolation alerts, Postgres COPY saves) streamed directly from the background ETL container loop via WebSockets!
-  * Supports terminal scroll-lock toggle and console clearing.
-* **NEW - Live Postgres Warehouse Inspector**:
-  * Select active target tables (`warehouse.order_events`, `warehouse.orders`, `warehouse.pipeline_execution`, and `warehouse.schema_drift_logs`!) to inspect live-updated row inserts in a structured grid fetched straight from PostgreSQL!
-* **Telemetry Toggle**:
-  * **Live Telemetry Mode**: Connects directly to our active WebSocket server at `ws://localhost:8085/ws` to stream real metrics, logs, and database grids!
-  * **Simulation Mode**: Generates a rich, realistic local data-flow simulation if the backend is offline.
-* **NEW - Quarantine Hub**:
-  * A dedicated visual review panel displaying malformed events isolated in `warehouse.quarantine_events`.
-  * **JSON Code Debugger Editor**: Launch a debugging workspace, edit the malformed JSON event payload, and execute transactional database reprocessing using the `POST /reprocess` backend API.
-* **Agent Hub / Checklist**: View historical bug reviews and check off pre-deployment validation parameters before writing code.
+### Key Features by Tab:
+
+1. **The Chronicle (Session Timeline)**:
+   * View all development sessions (Sessions 1–9) rendered as "chapters" on an animated vertical timeline.
+   * Expand each card to see the goals, activities, bugs found, and resolution details.
+   * Includes a real-time Search Bar to filter sessions by title or description text.
+
+2. **The Bestiary (Bug & Error Tracker)**:
+   * Displays all pipeline issues as detailed beast cards (Critical, High, Medium, Low).
+   * Displays root cause analysis, fix narratives, code snippets, and lessons learned.
+   * Features a search input and chip-based severity filter.
+
+3. **The Codex (Development Fable Log)**:
+   * Reads like a historical saga book. Contains pull quotes, major milestones, and error logs per session.
+
+4. **The Forge (Live Pipeline Metrics)**:
+   * Shows real-time counters (loaded records, throughput, quarantine rate, successful runs).
+   * **Sparkline Mini-Charts**: Displays 20-point trailing history graphs for instant trend detection.
+   * Includes controls to toggle simulation/live modes, speed, and anomaly rates.
+   * Virtual scrolling stdout log terminal and database inspector.
+
+5. **The Constellation (Live Data Flow Canvas)**:
+   * Particle canvas showing live database data flowing through agent orbs. Red particles show quarantined anomalies, green/blue represent clean records.
+
+6. **The Watchtower (System Topology)**:
+   * Health panel showing status of all 13 services. Clicking cards expands system specs.
+   * Interactive switches to stop/start services and simulate cascading network failures.
+
+7. **The Quarantine (Human-in-the-Loop Hub)**:
+   * View and modify quarantined records using a dark code editor, and re-inject them into the pipeline.
 
 ---
 
-## 🛠️ 3. Agent Learner & Mistake Board
+## ⚡ 3. The Observatory Power-User Features
+
+* **⌘K / Ctrl+K Command Palette**:
+  * Trigger `Cmd+K` (macOS) or `Ctrl+K` (Windows/Linux) to open the palette search window. Jump to any tab, toggle simulation states, or find specific session chapters, bugs, and services.
+* **🔢 Keyboard Shortcuts**:
+  * Navigate tabs instantly by pressing number keys `1-7` (deactivated while typing in inputs).
+  * Close the palette with `Esc`.
+* **♿ Accessibility & Reduced Motion**:
+  * Full support for `prefers-reduced-motion` media queries which immediately freezes canvas particle loops and stops all transitions.
+* **🖨️ Print Styles**:
+  * Clean black-and-white print styles built to format logs, code bases, and metrics for reports.
+
+---
+
+## 🛠️ 4. Agent Learner & Mistake Board
 
 To prevent regression bugs (such as framework package incompatibilities) during future development runs, we have established a central knowledge repository:
 👉 **Review the developer checks in**: **[wip/AGENT_KNOWLEDGE.md](file:///Users/vamsireddy/Desktop/Agents%20Dev/production-pipeline/wip/AGENT_KNOWLEDGE.md)**
 
-It records in-depth post-mortems of connexion, pendulum, flask-session, and sqlalchemy package requirements, ensuring environment stability across restarts.
-
 ---
 
-## 📊 4. Metrics & Port Mapping Index
+## 📊 5. Metrics & Port Mapping Index
 
 The local ecosystem exposes the following active interfaces once bootstrapped:
 
 | Interface / Service | Local Port | URL |
 |---------------------|------------|-----|
-| **React Dashboard (Material 3)** | `8082` | [http://localhost:8082](http://localhost:8082) |
+| **Fable Dashboard** | `5173` | [http://localhost:5173](http://localhost:5173) |
 | **WebSocket Telemetry Server** | `8085` | `ws://localhost:8085/ws` (REST: `http://localhost:8085`) |
 | **Apache Airflow Web UI** | `8080` | [http://localhost:8080](http://localhost:8080) *(User: airflow / Pass: airflow)* |
 | **Grafana Analytics Charts** | `3000` | [http://localhost:3000](http://localhost:3000) *(User: admin / Pass: admin)* |

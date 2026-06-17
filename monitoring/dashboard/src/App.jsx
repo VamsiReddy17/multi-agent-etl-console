@@ -1,9 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { 
   Server, Activity, Terminal, Database, CheckCircle, AlertTriangle, 
   TrendingUp, RefreshCw, Cpu, Layers, Heart, ShieldCheck, ChevronDown,
   ChevronRight, BookOpen, Zap, Eye, Clock, Bug, Wrench, Award,
-  Play, Pause, Trash2, Check, Edit3, ArrowRight
+  Play, Pause, Trash2, Check, Edit3, ArrowRight, Search, Command, Info
 } from 'lucide-react';
 
 // ═══════════════════════════════════════════════════════════════════════════════
@@ -407,6 +407,53 @@ export default function App() {
   const [particles, setParticles] = useState([]);
   const particleIdRef = useRef(0);
 
+  // ═══════════════════════════════════════════════════════════════════════════
+  //  PHASE 3 — Observatory Features
+  // ═══════════════════════════════════════════════════════════════════════════
+
+  // Command Palette (Cmd+K)
+  const [cmdOpen, setCmdOpen] = useState(false);
+  const [cmdQuery, setCmdQuery] = useState('');
+  const cmdInputRef = useRef(null);
+  const [cmdActiveIdx, setCmdActiveIdx] = useState(0);
+
+  // Toast Notifications
+  const [toasts, setToasts] = useState([]);
+  const toastIdRef = useRef(0);
+
+  // Sparkline History
+  const [sparkHistory, setSparkHistory] = useState({
+    loaded: Array(20).fill(0).map(() => Math.random() * 60 + 40),
+    throughput: Array(20).fill(0).map(() => Math.random() * 40 + 60),
+    quarantine: Array(20).fill(0).map(() => Math.random() * 30 + 10),
+    runs: Array(20).fill(0).map(() => Math.random() * 50 + 50)
+  });
+
+  // Search filters
+  const [chronicleSearch, setChronicleSearch] = useState('');
+  const [bestiarySearch, setBestiarySearch] = useState('');
+
+  // Toast helper
+  const addToast = useCallback((type, text) => {
+    const id = toastIdRef.current++;
+    setToasts(prev => [...prev, { id, type, text }]);
+    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500);
+  }, []);
+
+  // Update sparkline history on metric changes
+  useEffect(() => {
+    if (!isGenerating) return;
+    const intervalId = setInterval(() => {
+      setSparkHistory(prev => ({
+        loaded: [...prev.loaded.slice(1), Math.min(100, (metrics.loadedCount / 3000) % 100)],
+        throughput: [...prev.throughput.slice(1), Math.min(100, (metrics.ingestRate / 5) % 100)],
+        quarantine: [...prev.quarantine.slice(1), Math.min(100, metrics.quarantineRate * 5)],
+        runs: [...prev.runs.slice(1), Math.min(100, (metrics.successRuns % 50) * 2)]
+      }));
+    }, 2000);
+    return () => clearInterval(intervalId);
+  }, [isGenerating, metrics.loadedCount, metrics.ingestRate, metrics.quarantineRate, metrics.successRuns]);
+
   // Toggle service status
   const toggleComponentStatus = (id) => {
     setComponents(prev => prev.map(comp => {
@@ -550,12 +597,85 @@ export default function App() {
     if (terminalRef.current) terminalRef.current.scrollTop = terminalRef.current.scrollHeight;
   }, [logs]);
 
+  // Focus cmd input when palette opens
+  useEffect(() => {
+    if (cmdOpen && cmdInputRef.current) {
+      cmdInputRef.current.focus();
+      setCmdQuery('');
+      setCmdActiveIdx(0);
+    }
+  }, [cmdOpen]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const tabKeys = ['chronicle', 'bestiary', 'codex', 'forge', 'constellation', 'watchtower', 'quarantine'];
+    const handler = (e) => {
+      // Cmd+K or Ctrl+K
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        setCmdOpen(prev => !prev);
+        return;
+      }
+      // Escape
+      if (e.key === 'Escape' && cmdOpen) {
+        setCmdOpen(false);
+        return;
+      }
+      // Number keys 1-7 for tab switching (only when no input focused)
+      if (!cmdOpen && !['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) {
+        const num = parseInt(e.key);
+        if (num >= 1 && num <= 7) {
+          setActiveTab(tabKeys[num - 1]);
+          addToast('info', `Switched to ${tabKeys[num - 1].charAt(0).toUpperCase() + tabKeys[num - 1].slice(1)}`);
+        }
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [cmdOpen, addToast]);
+
+  // Command palette search index
+  const cmdItems = [
+    // Tabs
+    ...['chronicle', 'bestiary', 'codex', 'forge', 'constellation', 'watchtower', 'quarantine'].map((id, i) => ({
+      type: 'tab', id, label: `Go to The ${id.charAt(0).toUpperCase() + id.slice(1)}`, shortcut: `${i + 1}`,
+      icon: [BookOpen, Bug, Award, Activity, Layers, Eye, AlertTriangle][i]
+    })),
+    // Actions
+    { type: 'action', id: 'toggle-sim', label: isGenerating ? 'Pause Simulation' : 'Resume Simulation', icon: isGenerating ? Pause : Play },
+    { type: 'action', id: 'toggle-live', label: liveMode ? 'Switch to Simulation Mode' : 'Switch to Live Mode', icon: Heart },
+    // Sessions
+    ...SESSIONS.map(s => ({ type: 'session', id: `session-${s.id}`, label: s.title, meta: s.date, icon: BookOpen })),
+    // Bugs
+    ...BUGS.map(b => ({ type: 'bug', id: b.id, label: `${b.id}: ${b.title}`, meta: b.severity, icon: Bug })),
+    // Components
+    ...INITIAL_COMPONENTS.map(c => ({ type: 'service', id: c.id, label: c.name, meta: `port ${c.port}`, icon: Server }))
+  ];
+
+  const filteredCmdItems = cmdQuery.trim() === ''
+    ? cmdItems.slice(0, 12)
+    : cmdItems.filter(item => item.label.toLowerCase().includes(cmdQuery.toLowerCase())).slice(0, 12);
+
+  const executeCmdItem = (item) => {
+    setCmdOpen(false);
+    if (item.type === 'tab') { setActiveTab(item.id); addToast('info', `Navigated to The ${item.id.charAt(0).toUpperCase() + item.id.slice(1)}`); }
+    else if (item.type === 'action' && item.id === 'toggle-sim') { setIsGenerating(p => !p); addToast('info', isGenerating ? 'Simulation paused' : 'Simulation resumed'); }
+    else if (item.type === 'action' && item.id === 'toggle-live') { setLiveMode(p => !p); addToast('info', liveMode ? 'Switched to Simulation' : 'Switched to Live'); }
+    else if (item.type === 'session') { setActiveTab('chronicle'); setExpandedChapter(parseInt(item.id.split('-')[1])); addToast('info', `Opened ${item.label}`); }
+    else if (item.type === 'bug') { setActiveTab('bestiary'); setExpandedBug(item.id); addToast('info', `Opened ${item.id}`); }
+    else if (item.type === 'service') { setActiveTab('watchtower'); setSelectedComp(INITIAL_COMPONENTS.find(c => c.id === item.id)); addToast('info', `Viewing ${item.label}`); }
+  };
+
   // Compute system health
   const healthyCount = components.filter(c => c.status === 'up').length;
   const systemHealth = healthyCount === components.length ? 'healthy' : healthyCount > components.length * 0.7 ? 'degraded' : 'critical';
 
-  // Filtered bugs
-  const filteredBugs = bugFilter === 'ALL' ? BUGS : BUGS.filter(b => b.severity === bugFilter);
+  // Filtered bugs (with search)
+  const filteredBugs = (bugFilter === 'ALL' ? BUGS : BUGS.filter(b => b.severity === bugFilter))
+    .filter(b => bestiarySearch === '' || b.title.toLowerCase().includes(bestiarySearch.toLowerCase()) || b.description.toLowerCase().includes(bestiarySearch.toLowerCase()));
+
+  // Filtered sessions (with search)
+  const filteredSessions = SESSIONS.filter(s => chronicleSearch === '' || s.title.toLowerCase().includes(chronicleSearch.toLowerCase()) || s.summary.toLowerCase().includes(chronicleSearch.toLowerCase()));
 
   // Node positions for constellation
   const nodePositions = [
@@ -571,14 +691,14 @@ export default function App() {
   // ═════════════════════════════════════════════════════════════════════════════
   const navItems = [
     { section: 'NARRATIVE' },
-    { id: 'chronicle', label: 'The Chronicle', icon: <BookOpen size={18} /> },
-    { id: 'bestiary', label: 'The Bestiary', icon: <Bug size={18} />, badge: BUGS.length },
-    { id: 'codex', label: 'The Codex', icon: <Award size={18} /> },
+    { id: 'chronicle', label: 'The Chronicle', icon: <BookOpen size={18} />, kbd: '1' },
+    { id: 'bestiary', label: 'The Bestiary', icon: <Bug size={18} />, badge: BUGS.length, kbd: '2' },
+    { id: 'codex', label: 'The Codex', icon: <Award size={18} />, kbd: '3' },
     { section: 'OPERATIONS' },
-    { id: 'forge', label: 'The Forge', icon: <Activity size={18} /> },
-    { id: 'constellation', label: 'The Constellation', icon: <Layers size={18} /> },
-    { id: 'watchtower', label: 'The Watchtower', icon: <Eye size={18} /> },
-    { id: 'quarantine', label: 'The Quarantine', icon: <AlertTriangle size={18} />, badge: quarantineRecords.length },
+    { id: 'forge', label: 'The Forge', icon: <Activity size={18} />, kbd: '4' },
+    { id: 'constellation', label: 'The Constellation', icon: <Layers size={18} />, kbd: '5' },
+    { id: 'watchtower', label: 'The Watchtower', icon: <Eye size={18} />, kbd: '6' },
+    { id: 'quarantine', label: 'The Quarantine', icon: <AlertTriangle size={18} />, badge: quarantineRecords.length, kbd: '7' },
   ];
 
   // ═════════════════════════════════════════════════════════════════════════════
@@ -610,6 +730,7 @@ export default function App() {
                 {item.icon}
                 <span>{item.label}</span>
                 {item.badge > 0 && <span className="nav-badge">{item.badge}</span>}
+                {item.kbd && <span className="kbd-hint">{item.kbd}</span>}
               </div>
             );
           })}
@@ -642,6 +763,14 @@ export default function App() {
             {activeTab === 'quarantine' && '🔒 The Quarantine'}
           </div>
           <div className="topbar-controls">
+            <div
+              className="mode-pill"
+              onClick={() => setCmdOpen(true)}
+              style={{ cursor: 'pointer', gap: 6 }}
+            >
+              <Command size={12} />
+              <span style={{ fontSize: '0.72rem' }}>⌘K</span>
+            </div>
             <div
               className={`mode-pill ${liveMode ? 'active' : ''}`}
               onClick={() => setLiveMode(!liveMode)}
@@ -685,8 +814,17 @@ export default function App() {
                 </div>
               </div>
 
+              <div className="search-bar">
+                <Search size={16} />
+                <input
+                  placeholder="Search sessions by title or summary..."
+                  value={chronicleSearch}
+                  onChange={e => setChronicleSearch(e.target.value)}
+                />
+              </div>
+
               <div className="timeline">
-                {SESSIONS.map((session) => (
+                {filteredSessions.map((session) => (
                   <div key={session.id} className="timeline-chapter">
                     <div className="timeline-dot"></div>
                     <div
@@ -757,6 +895,16 @@ export default function App() {
               <div className="bestiary-header">
                 <h2>The Bestiary</h2>
                 <p>Every bug encountered, diagnosed, and conquered — with root cause analysis, fixes, and lessons learned.</p>
+              </div>
+              <div className="bestiary-filters">
+                <div className="search-bar" style={{ marginBottom: 12, flex: 1 }}>
+                  <Search size={16} />
+                  <input
+                    placeholder="Search bugs by title or description..."
+                    value={bestiarySearch}
+                    onChange={e => setBestiarySearch(e.target.value)}
+                  />
+                </div>
               </div>
 
               <div className="bestiary-filters">
@@ -842,6 +990,11 @@ export default function App() {
                     <TrendingUp size={12} className="up" />
                     <span className="up">PostgreSQL warehouse</span>
                   </div>
+                  <div className="sparkline-container">
+                    {sparkHistory.loaded.map((v, i) => (
+                      <div key={i} className="sparkline-bar blue" style={{ height: `${v}%` }} />
+                    ))}
+                  </div>
                 </div>
 
                 <div className="metric-tile green">
@@ -855,6 +1008,11 @@ export default function App() {
                   <div className="metric-tile-sub">
                     <Activity size={12} className="up" />
                     <span>Peak: 1,000 evt/s</span>
+                  </div>
+                  <div className="sparkline-container">
+                    {sparkHistory.throughput.map((v, i) => (
+                      <div key={i} className="sparkline-bar green" style={{ height: `${v}%` }} />
+                    ))}
                   </div>
                 </div>
 
@@ -870,6 +1028,11 @@ export default function App() {
                     <ShieldCheck size={12} />
                     <span>Safety limit: 20.0%</span>
                   </div>
+                  <div className="sparkline-container">
+                    {sparkHistory.quarantine.map((v, i) => (
+                      <div key={i} className="sparkline-bar red" style={{ height: `${v}%` }} />
+                    ))}
+                  </div>
                 </div>
 
                 <div className="metric-tile amber">
@@ -882,6 +1045,11 @@ export default function App() {
                   </div>
                   <div className="metric-tile-sub">
                     <span>Batch size: 2,000</span>
+                  </div>
+                  <div className="sparkline-container">
+                    {sparkHistory.runs.map((v, i) => (
+                      <div key={i} className="sparkline-bar amber" style={{ height: `${v}%` }} />
+                    ))}
                   </div>
                 </div>
               </div>
@@ -1285,6 +1453,84 @@ export default function App() {
 
         </div>
       </main>
+
+      {/* ──── COMMAND PALETTE (Cmd+K) ──── */}
+      {cmdOpen && (
+        <div className="cmd-palette-overlay" onClick={() => setCmdOpen(false)}>
+          <div className="cmd-palette" onClick={e => e.stopPropagation()}>
+            <div className="cmd-input-wrap">
+              <Search size={16} />
+              <input
+                ref={cmdInputRef}
+                className="cmd-input"
+                placeholder="Search tabs, sessions, bugs, services..."
+                value={cmdQuery}
+                onChange={e => { setCmdQuery(e.target.value); setCmdActiveIdx(0); }}
+                onKeyDown={e => {
+                  if (e.key === 'ArrowDown') { e.preventDefault(); setCmdActiveIdx(i => Math.min(i + 1, filteredCmdItems.length - 1)); }
+                  if (e.key === 'ArrowUp') { e.preventDefault(); setCmdActiveIdx(i => Math.max(i - 1, 0)); }
+                  if (e.key === 'Enter' && filteredCmdItems[cmdActiveIdx]) { executeCmdItem(filteredCmdItems[cmdActiveIdx]); }
+                }}
+              />
+            </div>
+            <div className="cmd-results">
+              {filteredCmdItems.length > 0 ? (
+                <>
+                  {['tab', 'action', 'session', 'bug', 'service'].map(type => {
+                    const items = filteredCmdItems.filter(i => i.type === type);
+                    if (items.length === 0) return null;
+                    const labels = { tab: 'NAVIGATE', action: 'ACTIONS', session: 'SESSIONS', bug: 'BUGS', service: 'SERVICES' };
+                    return (
+                      <div key={type}>
+                        <div className="cmd-section-label">{labels[type]}</div>
+                        {items.map(item => {
+                          const globalIdx = filteredCmdItems.indexOf(item);
+                          const IconComp = item.icon;
+                          return (
+                            <div
+                              key={item.id}
+                              className={`cmd-result-item ${globalIdx === cmdActiveIdx ? 'active' : ''}`}
+                              onClick={() => executeCmdItem(item)}
+                              onMouseEnter={() => setCmdActiveIdx(globalIdx)}
+                            >
+                              <IconComp size={16} />
+                              <span>{item.label}</span>
+                              {item.shortcut && <span className="cmd-result-meta">{item.shortcut}</span>}
+                              {item.meta && <span className="cmd-result-meta">{item.meta}</span>}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })}
+                </>
+              ) : (
+                <div className="cmd-empty">
+                  <Search size={28} />
+                  <div>No results for "{cmdQuery}"</div>
+                </div>
+              )}
+            </div>
+            <div className="cmd-footer">
+              <div><kbd>↑</kbd><kbd>↓</kbd> navigate <kbd>↵</kbd> select</div>
+              <div><kbd>esc</kbd> close</div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ──── TOAST NOTIFICATIONS ──── */}
+      <div className="toast-container">
+        {toasts.map(t => (
+          <div key={t.id} className={`toast ${t.type}`}>
+            {t.type === 'success' && <CheckCircle size={16} />}
+            {t.type === 'error' && <AlertTriangle size={16} />}
+            {t.type === 'warning' && <AlertTriangle size={16} />}
+            {t.type === 'info' && <Info size={16} />}
+            <span>{t.text}</span>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
