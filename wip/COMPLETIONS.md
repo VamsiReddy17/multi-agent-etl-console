@@ -29,6 +29,7 @@
 | `monitoring/dashboard/src/App.jsx` (Cosmos) | ✅ | Session 10 | Refactored active states, headers, and Command Palette targets |
 | `postgres/init.sql` (quality table updates) | ✅ | Session 11 | Added `warehouse.quality_report` table DDL |
 | `docker-compose.yml (API update)` | ✅ | Session 13 | Adds containerized `api` service mapping host port `8081` |
+| `docker-compose.yml (Volume updates)` | ✅ | Session 14 | Mounts scripts, tests, and wip volumes to the API service container |
 | `scripts/create_topics.sh` (dead_letter update) | ✅ | Session 11 | Configures and creates `dead_letter` Kafka topic |
 
 ---
@@ -55,6 +56,8 @@
 | `pipelines/streaming_etl.py` | ✅ | Session 1 / 11 | run_once + run_loop + CLI entry point, and Session 11 DLQ integration |
 | `pipelines/config/pipeline_config.yaml` | ✅ | Session 1 | Batch size, thresholds, intervals |
 | `api/server.py` | ✅ | Session 13 | FastAPI endpoints /health, /pipeline/run, /pipeline/status |
+| `scripts/load_test.py` | ✅ | Session 14 | Benchmarking script that generates 10,000 orders and measures parametric throughput |
+| `wip/LOAD_TEST_RESULTS.md` | ✅ | Session 14 | Performance comparison report detailing optimal batch size suggestions |
 
 ---
 
@@ -140,3 +143,4 @@
 | Prometheus scraping status | ✅ UP | Session 4, 5 & 6 | `airflow_webserver:8000` target UP |
 | Grafana dashboard preloaded | ✅ Passed | Session 4, 5 & 6 | Dashboard rendering live non-zero charts |
 | API layer response validation | ✅ Passed | Session 13 | Tested `/health`, `/pipeline/status`, and `/pipeline/run` successfully |
+| Parametric load test verification | ✅ Passed | Session 14 | Ingested 10k messages at ~2,120 rows/sec on local Docker environment |

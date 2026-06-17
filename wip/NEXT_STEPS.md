@@ -48,11 +48,6 @@
 
 ## 🔵 Priority 4 — Low (Future Sessions)
 
-### [ ] Load testing
-- Produce 10,000 messages to Kafka
-- Measure pipeline throughput (rows/second)
-- Tune `KAFKA_BATCH_SIZE` for optimal performance
-
 ### [ ] Retry dead-letter records
 - Cron job that reads `dead_letter` topic and re-runs through pipeline
 - After N retries, move to `permanent_failures` table
@@ -100,6 +95,7 @@
 | Add data quality report persistence to Postgres | ✅ | Session 11 |
 | Implement BigQueryLoadAgent and target routing | ✅ | Session 12 |
 | Implement containerized FastAPI REST API layer | ✅ | Session 13 |
+| Ingest 10,000 Kafka events and run parametric load test | ✅ | Session 14 |
 
 ---
 

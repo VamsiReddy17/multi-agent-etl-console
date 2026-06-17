@@ -600,6 +600,52 @@ curl -s http://localhost:8081/pipeline/status
 
 ---
 
+## Session 14 — 2026-06-17
+
+**IDE**: Antigravity
+**Developer**: Vamsi Reddy
+**Goal**: Design and implement a load testing framework to benchmark pipeline ingestion rates across different `KAFKA_BATCH_SIZE` parameters, and generate a performance comparison report.
+
+### 🔍 Activities
+- **Volume Persistences**: Modified `docker-compose.yml` to mount host directories (`./scripts`, `./tests`, `./wip`) into the `api` container, enabling hot-reloading and direct persistence of results.
+- **Benchmark Implementation**: Created `scripts/load_test.py` that handles check/creation of a `load_test_orders` Kafka topic, fast ingestion of 10,000 JSON messages, and parametric consumer processing benchmarking.
+- **Parametric Consuming**: Tested batch sizes `[100, 500, 1000, 2000, 5000]` by overriding the consumer group dynamically and disabling the Referee dynamic throughput controller during testing.
+- **Execution & Reporting**: Executed the load test inside the Docker container, verifying correct Postgres order loading, and compiled results to `wip/LOAD_TEST_RESULTS.md`.
+
+### 💻 Commands Run
+```bash
+docker-compose up -d --no-deps api
+docker exec prod_api python3 /app/scripts/load_test.py --broker kafka:9092
+docker exec prod_postgres psql -U postgres -d dataware -c "SELECT COUNT(*) FROM warehouse.order_events;"
+docker exec prod_api pytest tests/ -v
+```
+
+### 📤 Outputs / Results
+- Benchmark Results:
+  - **100 batch**: 1941.85 rows/sec, 50.3ms batch latency
+  - **500 batch**: 2056.39 rows/sec, 242.7ms batch latency
+  - **1000 batch**: 2110.73 rows/sec, 473.0ms batch latency
+  - **2000 batch**: 2110.80 rows/sec, 946.2ms batch latency
+  - **5000 batch**: 2125.65 rows/sec, 2349.5ms batch latency
+- Pytest: All 54 tests pass cleanly inside container.
+
+### ⚠️ Issues Hit
+- FileNotFoundError: When running the script inside the container, saving results to `/Users/vamsireddy/...` failed as absolute path doesn't map to container path `/app`.
+- Stale tests inside container: Recreating the container restored build-time unit tests, causing Starlette test client failures due to missing volume mapping for tests.
+
+### 🔧 Fixes Applied
+- Switched the output path in `scripts/load_test.py` to be dynamic using `os.path.dirname(os.path.abspath(__file__))` to map to `/app/wip/` in the container.
+- Mounted `./wip:/app/wip` and `./tests:/app/tests` in `docker-compose.yml` volumes for `api` and restarted the container.
+
+### ✅ Completions This Session
+- Implemented and executed parametric load testing framework.
+- Persisted results and recommended tuning options in `wip/LOAD_TEST_RESULTS.md`.
+
+### 📋 Pending for Next Session
+- Low Priority 4 roadmap: Retry Dead-Letter Records cron job.
+
+---
+
 ## Template for Future Sessions
 
 ```markdown
