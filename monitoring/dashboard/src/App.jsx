@@ -389,6 +389,18 @@ export default function App() {
     ]
   });
 
+  // BQ vs Postgres Data Comparison
+  const [bqComparison, setBqComparison] = useState([
+    { table: 'Customers', pg_count: 1542, bq_count: 1542, status: 'Match' },
+    { table: 'Products', pg_count: 248, bq_count: 248, status: 'Match' },
+    { table: 'Orders', pg_count: 8943, bq_count: 8940, status: 'Syncing' },
+    { table: 'Order events', pg_count: 10432, bq_count: 10432, status: 'Match' },
+    { table: 'Quarantine events', pg_count: 124, bq_count: 124, status: 'Match' },
+    { table: 'Permanent failures', pg_count: 12, bq_count: 12, status: 'Match' },
+    { table: 'Quality report', pg_count: 35, bq_count: 35, status: 'Match' },
+    { table: 'Pipeline execution', pg_count: 686, bq_count: 686, status: 'Match' },
+  ]);
+
   // Pipeline metrics
   const [metrics, setMetrics] = useState({
     totalRuns: 33, successRuns: 33,
@@ -530,6 +542,7 @@ export default function App() {
           if (payload.logs?.length > 0) setLogs(payload.logs);
           if (payload.quarantine) setQuarantineRecords(payload.quarantine);
           if (payload.db_records) setDbRecords(payload.db_records);
+          if (payload.bq_comparison) setBqComparison(payload.bq_comparison);
         } catch (err) { console.error("[WS] Parse error:", err); }
       };
       socket.onclose = () => { reconnectTimeout = setTimeout(connect, 3000); };
@@ -1528,6 +1541,79 @@ export default function App() {
                     </div>
                   </div>
                 </div>
+              </div>
+
+              {/* PostgreSQL vs BigQuery Sync Monitor */}
+              <div className="glass-card" style={{ marginTop: 24 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                  <div>
+                    <h3 style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', fontWeight: 600, color: 'var(--text-primary)' }}>
+                      PostgreSQL vs BigQuery Sync Monitor
+                    </h3>
+                    <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 4 }}>
+                      Real-time verification of data consistency between PostgreSQL database (source) and Google BigQuery raw zone (target).
+                    </p>
+                  </div>
+                  {liveMode && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.75rem', color: 'var(--aurora-glow)', background: 'var(--aurora-dim)', padding: '4px 10px', borderRadius: 12, border: '1px solid rgba(16, 185, 129, 0.2)' }}>
+                      <span className="legend-dot green" style={{ margin: 0 }}></span>
+                      <span>Live Syncing</span>
+                    </div>
+                  )}
+                </div>
+                
+                <table className="db-table" style={{ width: '100%' }}>
+                  <thead>
+                    <tr>
+                      <th style={{ width: '35%' }}>Warehouse Table</th>
+                      <th style={{ width: '25%' }}>PostgreSQL Count (Source)</th>
+                      <th style={{ width: '25%' }}>BigQuery Count (Target)</th>
+                      <th style={{ width: '15%', textAlign: 'right' }}>Sync Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {bqComparison.map((item, i) => {
+                      const isMatch = item.status === 'Match';
+                      const isSyncing = item.status === 'Syncing';
+                      const isOffline = item.status === 'Offline';
+                      
+                      let statusClass = 'offline';
+                      if (isMatch) statusClass = 'success';
+                      else if (isSyncing) statusClass = 'warning';
+                      
+                      return (
+                        <tr key={i}>
+                          <td style={{ color: 'var(--text-primary)', fontWeight: 500, fontFamily: 'var(--font-body)' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                              <Database size={14} style={{ color: isMatch ? 'var(--emerald-glow)' : isSyncing ? 'var(--amber)' : 'var(--text-muted)' }} />
+                              {item.table}
+                            </div>
+                          </td>
+                          <td style={{ color: 'var(--nebula-glow)', fontFamily: 'var(--font-mono)' }}>
+                            {typeof item.pg_count === 'number' ? item.pg_count.toLocaleString() : (item.pg_count || 0)}
+                          </td>
+                          <td style={{ color: isOffline ? 'var(--text-muted)' : 'var(--pulsar-glow)', fontFamily: 'var(--font-mono)' }}>
+                            {typeof item.bq_count === 'number' ? item.bq_count.toLocaleString() : (item.bq_count || '—')}
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            <span 
+                              className={`status-pill ${statusClass}`}
+                              style={{ 
+                                boxShadow: isMatch 
+                                  ? '0 0 10px rgba(16, 185, 129, 0.15)' 
+                                  : isSyncing 
+                                    ? '0 0 10px rgba(245, 158, 11, 0.15)' 
+                                    : 'none'
+                              }}
+                            >
+                              {item.status}
+                            </span>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
 
               {/* Terminal */}

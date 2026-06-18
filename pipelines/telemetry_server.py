@@ -348,6 +348,60 @@ def reprocess_event(req: ReprocessRequest):
     finally:
         conn.close()
 
+def fetch_bq_comparison() -> List[Dict[str, Any]]:
+    tables = [
+        ("warehouse.customers", "customers"),
+        ("warehouse.products", "products"),
+        ("warehouse.orders", "orders"),
+        ("warehouse.order_events", "order_events"),
+        ("warehouse.quarantine_events", "quarantine_events"),
+        ("warehouse.permanent_failures", "permanent_failures"),
+        ("warehouse.quality_report", "quality_report"),
+        ("warehouse.pipeline_execution", "pipeline_execution"),
+    ]
+    pg_counts = {}
+    conn = get_db_connection()
+    if conn:
+        try:
+            with conn.cursor() as cur:
+                for pg_table, _ in tables:
+                    cur.execute(f"SELECT COUNT(*) FROM {pg_table};")
+                    pg_counts[pg_table] = cur.fetchone()[0]
+        except Exception as e:
+            logger.error(f"Error fetching Postgres counts for comparison: {e}")
+        finally:
+            conn.close()
+            
+    bq_counts = {}
+    try:
+        from google.cloud import bigquery
+        gcp_project = os.getenv("GCP_PROJECT_ID", "dataengineering-481815")
+        bq_client = bigquery.Client(project=gcp_project)
+        for _, bq_table in tables:
+            table_ref = f"{gcp_project}.nebula_raw_zone.{bq_table}"
+            try:
+                t = bq_client.get_table(table_ref)
+                bq_counts[bq_table] = t.num_rows
+            except Exception:
+                bq_counts[bq_table] = -1
+    except Exception as e:
+        logger.error(f"Error connecting to BigQuery for comparison: {e}")
+        
+    comparison = []
+    for pg_table, bq_table in tables:
+        pg_cnt = pg_counts.get(pg_table, 0)
+        bq_cnt = bq_counts.get(bq_table, -1)
+        status = "Match" if pg_cnt == bq_cnt else "Syncing"
+        if bq_cnt == -1:
+            status = "Offline"
+        comparison.append({
+            "table": bq_table.capitalize().replace("_", " "),
+            "pg_count": pg_cnt,
+            "bq_count": bq_cnt if bq_cnt != -1 else "—",
+            "status": status
+        })
+    return comparison
+
 @app.websocket("/ws")
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
@@ -359,12 +413,14 @@ async def websocket_endpoint(websocket: WebSocket):
             logs_data = read_tail_logs()
             quarantine_data = fetch_quarantine_records()
             db_records_data = fetch_db_records()
+            bq_comparison_data = fetch_bq_comparison()
             
             payload = {
                 "metrics": metrics_data,
                 "logs": logs_data,
                 "quarantine": quarantine_data,
-                "db_records": db_records_data
+                "db_records": db_records_data,
+                "bq_comparison": bq_comparison_data
             }
             
             await websocket.send_text(json.dumps(payload))
