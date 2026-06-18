@@ -1,141 +1,72 @@
 # BigQuery Migration Guide
 
-## Overview
-
-This guide describes how to migrate the production pipeline from local PostgreSQL to Google BigQuery for cloud-scale production deployment.
+This guide describes how to migrate and sync your local PostgreSQL data warehouse to Google Cloud BigQuery for cloud-scale production deployment, reporting, and analytics.
 
 ---
 
-## Schema Migration
+## 1. Schema Mapping & Datasets
 
-### PostgreSQL → BigQuery Mapping
+Following the celestial/Cosmos theme, the BigQuery environment is organized into two distinct zones:
+
+* **Raw Landing Zone (`nebula_raw_zone`)**: Replicates raw PostgreSQL transactional records, events, and metrics.
+* **Analytics Layer (`solar_core_analytics`)**: Exposes cleaned dimension tables and reporting views optimized for visualization tools like Looker Studio.
+
+### PostgreSQL → BigQuery Type Mapping
 
 | PostgreSQL Type | BigQuery Type |
 |----------------|--------------|
-| `SERIAL` | `INT64` (auto-assigned by app) |
-| `VARCHAR(n)` | `STRING` |
+| `SERIAL` / `INTEGER` | `INT64` |
+| `VARCHAR(n)` / `TEXT` | `STRING` |
 | `DECIMAL(p, s)` | `NUMERIC` |
 | `TIMESTAMP` | `TIMESTAMP` |
 | `BOOLEAN` | `BOOL` |
 
-### BigQuery Dataset Setup
+---
 
-```bash
-bq mk --dataset \
-  --location=US \
-  your-project:warehouse
-```
+## 2. Multi-Table Sync Strategy
 
-### Create Tables
+Rather than syncing a single table, the system implements a complete data replication strategy transferring all 8 tables from PostgreSQL's `warehouse` schema to BigQuery:
 
-```sql
--- order_events
-CREATE TABLE warehouse.order_events (
-  event_id INT64,
-  order_id INT64,
-  customer_id INT64,
-  product_id INT64,
-  quantity INT64,
-  amount NUMERIC,
-  event_type STRING,
-  event_timestamp TIMESTAMP,
-  received_at TIMESTAMP,
-  processed BOOL
-);
-```
+| Postgres Table | BigQuery Raw Table | Sync Mode | Watermark Column |
+| :--- | :--- | :--- | :--- |
+| `warehouse.customers` | `nebula_raw_zone.customers` | **Full Overwrite** | None (Small lookup table) |
+| `warehouse.products` | `nebula_raw_zone.products` | **Full Overwrite** | None (Small lookup table) |
+| `warehouse.orders` | `nebula_raw_zone.orders` | **Incremental** | `created_at` |
+| `warehouse.order_events` | `nebula_raw_zone.order_events` | **Incremental** | `received_at` |
+| `warehouse.quarantine_events`| `nebula_raw_zone.quarantine_events`| **Incremental** | `quarantined_at` |
+| `warehouse.permanent_failures` | `nebula_raw_zone.permanent_failures`| **Incremental** | `failed_at` |
+| `warehouse.quality_report` | `nebula_raw_zone.quality_report` | **Incremental** | `created_at` |
+| `warehouse.pipeline_execution` | `nebula_raw_zone.pipeline_execution`| **Incremental** | `created_at` |
+
+### Replication Details:
+1. **Full Overwrite (WRITE_TRUNCATE)**: Used for dimensional lookup tables (`customers`, `products`) to keep catalog metadata accurate and aligned with the source.
+2. **Incremental (WRITE_APPEND)**: Uses watermarking timestamps to probe the target BigQuery table, retrieve the highest timestamp already loaded, and query PostgreSQL for only newer records (`WHERE watermark_column > max_watermark`).
 
 ---
 
-## Agent Updates
+## 3. Direct Streaming Injection (GCP Sandbox Constraint)
 
-### Replace `PostgresLoadAgent` with BigQuery Load Agent
+To support **GCP Free Sandbox Accounts** where Google Cloud Storage (GCS) buckets might trigger billing restriction errors (HTTP 403), both the historical backfill script and the Airflow sync DAG use **Direct Streaming Injection**:
 
-```python
-from google.cloud import bigquery
-
-class BigQueryLoadAgent:
-    def __init__(self, project_id: str, dataset: str):
-        self.client = bigquery.Client(project=project_id)
-        self.table_id = f"{project_id}.{dataset}.order_events"
-
-    def run(self, quality_result):
-        rows = quality_result["data"]
-        errors = self.client.insert_rows_json(self.table_id, rows)
-        if errors:
-            raise RuntimeError(f"BigQuery insert errors: {errors}")
-        return {"status": "success", "rows_loaded": len(rows)}
-```
+1. **Extract**: Queries PostgreSQL using Python client libraries (`psycopg2` or Airflow's `PostgresHook`).
+2. **Local Staging**: Formats rows as Newline-Delimited JSON (JSONL) and stages them locally in `/tmp/*.json` inside the worker container.
+3. **Insert**: Uses the `google-cloud-bigquery` library's `load_table_from_file()` method to stream the staged JSONL directly to BigQuery over secure HTTPS, bypassing GCS completely.
 
 ---
 
-## Kafka → BigQuery via Pub/Sub (Recommended)
+## 4. Pipeline Code & SQL Configurations
 
-For production, replace Kafka with **Google Cloud Pub/Sub**:
+### SQL Schemas & Transformations
+* **Raw Schema Definitions**: Located under `bigquery/schema/*.sql` for each of the 8 tables.
+* **Analytics View**: The reporting view `solar_core_analytics.orders_reporting` is defined in [reporting_views.sql](file:///Users/vamsireddy/Desktop/Agents%20Dev/production-pipeline/bigquery/transformations/reporting_views.sql) selecting from `nebula_raw_zone.order_events`.
 
-```
-Pub/Sub Topic → Dataflow (streaming) → BigQuery
-```
+### Historical Backfill Script
+* **File**: [backfill_bigquery.py](file:///Users/vamsireddy/Desktop/Agents%20Dev/production-pipeline/scripts/backfill_bigquery.py)
+* **Usage**: Runs a safe, chunked batch sync (50,000 rows per batch) to load all existing PostgreSQL records to BigQuery:
+  ```bash
+  .venv/bin/python scripts/backfill_bigquery.py
+  ```
 
-Or use **Kafka Connect BigQuery Sink Connector**:
-
-```bash
-# Deploy Kafka Connect with BigQuery sink
-curl -X POST http://localhost:8083/connectors \
-  -H "Content-Type: application/json" \
-  -d '{
-    "name": "bigquery-sink",
-    "config": {
-      "connector.class": "com.wepay.kafka.connect.bigquery.BigQuerySinkConnector",
-      "topics": "orders,customers",
-      "project": "your-project",
-      "datasets": ".*=warehouse",
-      "keyfile": "/path/to/service-account.json"
-    }
-  }'
-```
-
----
-
-## Airflow on Cloud Composer
-
-Replace local Airflow with **Google Cloud Composer**:
-
-1. Create a Composer environment in GCP Console
-2. Upload DAGs to the Composer GCS bucket
-3. Update connection IDs to use GCP service accounts
-
-```bash
-gsutil cp airflow/dags/*.py gs://your-composer-bucket/dags/
-```
-
----
-
-## Environment Variables for BigQuery
-
-```env
-GOOGLE_APPLICATION_CREDENTIALS=/path/to/service-account.json
-GCP_PROJECT_ID=your-project-id
-BQ_DATASET=warehouse
-PUBSUB_TOPIC_ORDERS=projects/your-project/topics/orders
-
----
-
-## PostgreSQL to BigQuery ELT Sync (Batch Replication)
-
-For cost-effective free-tier data warehousing and Looker Studio reporting, a batch ELT pipeline is implemented to sync PostgreSQL order events incrementally into Google BigQuery:
-
-### 1. Watermark Sync DAG
-- **DAG File**: [postgres_to_bigquery_sync.py](file:///Users/vamsireddy/Desktop/Agents%20Dev/production-pipeline/airflow/dags/postgres_to_bigquery_sync.py)
-- **Replication Flow**:
-  1. **Watermark Probe**: Queries the target BigQuery table `raw.order_events` to retrieve the latest `received_at` timestamp.
-  2. **Incremental Extract**: Queries PostgreSQL table `warehouse.order_events` where `received_at > last_watermark` and saves it locally in JSON lines format.
-  3. **Stage**: Uploads the JSON lines file to Google Cloud Storage (GCS).
-  4. **Load**: Triggers BigQuery to bulk load the staged JSON lines from GCS into the `raw.order_events` table.
-
-### 2. BigQuery Transformations (T in ELT)
-SQL definitions and dimensional views are located in:
-- [order_events.sql](file:///Users/vamsireddy/Desktop/Agents%20Dev/production-pipeline/bigquery/schema/order_events.sql)
-- [reporting_views.sql](file:///Users/vamsireddy/Desktop/Agents%20Dev/production-pipeline/bigquery/transformations/reporting_views.sql)
-
-Looker Studio connects directly to the reporting view `warehouse.orders_reporting` to render metrics without running queries on the raw table.
-```
+### Airflow Sync DAG
+* **File**: [postgres_to_bigquery_sync.py](file:///Users/vamsireddy/Desktop/Agents%20Dev/production-pipeline/airflow/dags/postgres_to_bigquery_sync.py)
+* **Execution**: Scheduled `@hourly` in Airflow. Dynamically loops over the configurations to build task dependencies (`sync_customers`, `sync_products`, etc.) and executes them concurrently.
