@@ -17,43 +17,8 @@ A production-ready, high-throughput **Multi-Agent Data Engineering System** orch
 ### 1. Hybrid Local-to-Cloud Topology
 The architecture integrates local streaming data components (PostgreSQL, Kafka, Redis, Airflow, and FastAPI) with a Google Cloud BigQuery data warehouse.
 
-```
-                  ┌────────────────────────────────────────────────────────────┐
-                  │                 Local PC (Docker Host)                     │
-                  │                                                            │
-                  │  ┌──────────────┐      ┌─────────────┐      ┌───────────┐  │
-                  │  │  PostgreSQL  │ ◄─── │ Postgres    │ ◄─── │           │  │
-                  │  │   (:5432)    │      │ Load Agent  │      │           │  │
-                  │  └──────────────┘      └─────────────┘      │           │  │
-                  │                                             │           │  │
-                  │  ┌──────────────┐      ┌─────────────┐      │  Quality  │  │
-┌─────────────┐   │  │ Apache Kafka │ ───► │ Ingestion   │ ───► │  Agent    │  │
-│ Order Gen   │ ─►│   (:9092)    │      │ Agent       │      │           │  │
-└─────────────┘   │  └──────┬───────┘      └─────────────┘      │           │  │
-                  │         │                                   │           │  │
-                  │         ▼ (lag check)                       │           │  │
-                  │  ┌──────────────┐      ┌─────────────┐      │           │  │
-                  │  │  Airflow     │      │ BigQuery    │ ◄─── └─────┬─────┘  │
-                  │  │  Scheduler   │      │ Load Agent  │            │ (Clean)
-                  │  └──────────────┘      └──────┬──────┘            │
-                  │                               │                   ▼ (Quarantined)
-                  │  ┌──────────────┐             │             ┌───────────┐
-                  │  │  FastAPI API │             │             │Dead Letter│
-                  │  │   (:8081)    │             │             │Agent (DLQ)│
-                  │  └──────────────┘             │             └─────┬─────┘
-                  │                               │                   │
-                  └───────────────────────────────┼───────────────────┼────────┘
-                                                  │ (HTTPS)           │ (Kafka Topic)
-                                                  ▼                   ▼
-                                    ┌───────────────────────────┬───────────┐
-                                    │      Google Cloud GCP     │ Local Kafka
-                                    │                           │ (dead_letter)
-                                    │ ┌───────────────────────┐ │
-                                    │ │   BigQuery Dataset    │ │
-                                    │ │  (nebula_raw_zone)    │ │
-                                    │ └───────────────────────┘ │
-                                    └───────────────────────────┘
-```
+![System Architecture](architecture/architecture_diagram.png)
+
 
 ### 2. Stream Processing Sequence (With Sensor & DLQ)
 The sequence flowchart below illustrates the execution lifecycle, active data validation, consumer lag sensing, and dead letter queue routing:
