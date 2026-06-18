@@ -1,7 +1,7 @@
 # 🚀 Multi-Agent Pipeline & React Monitor — E2E Walkthrough
 
 Welcome to the **Production-Ready Multi-Agent Data Engineering Pipeline**! 
-This project features a real-time event-streaming pipeline (polling Kafka, transforming, validating, and loading to a PostgreSQL Data Warehouse) monitored by a premium, celestial-themed **Cosmos Development Chronicle Dashboard** on port `5173`.
+This project features a real-time event-streaming pipeline (polling Kafka, transforming, validating, and loading to a PostgreSQL Data Warehouse) monitored by a premium, celestial-themed **Cosmos Development Chronicle Dashboard** on port `8082`.
 
 ---
 
@@ -96,8 +96,8 @@ If you prefer to run them from your terminal:
 
 ## 🌐 2. Exposing the Cosmos Dashboard
 
-Once booted, the high-fidelity system monitor dashboard is served on **port `5173`**:
-👉 **Open your browser and navigate to**: **[http://localhost:5173](http://localhost:5173)**
+Once booted, the high-fidelity system monitor dashboard is served on **port `8082`**:
+👉 **Open your browser and navigate to**: **[http://localhost:8082](http://localhost:8082)**
 
 ### Key Features by Tab:
 
@@ -159,7 +159,7 @@ The local ecosystem exposes the following active interfaces once bootstrapped:
 
 | Interface / Service | Local Port | URL |
 |---------------------|------------|-----|
-| **Cosmos Dashboard** | `5173` | [http://localhost:5173](http://localhost:5173) |
+| **Cosmos Dashboard** | `8082` | [http://localhost:8082](http://localhost:8082) |
 | **WebSocket Telemetry Server** | `8085` | `ws://localhost:8085/ws` (REST: `http://localhost:8085`) |
 | **Apache Airflow Web UI** | `8080` | [http://localhost:8080](http://localhost:8080) *(User: airflow / Pass: airflow)* |
 | **Grafana Analytics Charts** | `3000` | [http://localhost:3000](http://localhost:3000) *(User: admin / Pass: admin)* |

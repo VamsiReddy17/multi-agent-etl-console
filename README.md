@@ -149,7 +149,7 @@ Once bootstrapped, your local development workspace exposes the following endpoi
 
 | Interface / Service | Local Port | URL | Description |
 |---------------------|------------|-----|-------------|
-| **Cosmos Dashboard** | `5173` | [http://localhost:5173](http://localhost:5173) | Premium cosmic development UI |
+| **Cosmos Dashboard** | `8082` | [http://localhost:8082](http://localhost:8082) | Premium cosmic development UI |
 | **FastAPI REST API** | `8081` | [http://localhost:8081](http://localhost:8081) | Control API to trigger and monitor pipeline |
 | **Apache Airflow Web UI** | `8080` | [http://localhost:8080](http://localhost:8080) | DAG scheduling & task worker logs |
 | **Grafana Analytics** | `3000` | [http://localhost:3000](http://localhost:3000) | Live preloaded metrics charts |

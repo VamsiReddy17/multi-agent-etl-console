@@ -57,7 +57,7 @@ Our development environment is comprised of local streaming components orchestra
 * **BigQuery Load Agent**: Streams clean JSONL payloads directly to BigQuery tables using the Python Client.
 * **FastAPI Orchestrator (`:8081`)**: Provides REST endpoints (`/pipeline/run`, `/pipeline/status`) to trigger runs and check metrics dynamically.
 * **Airflow Web UI (`:8080`)**: Manages pipelines, triggers DAGs, and monitors task logs.
-* **Cosmos UI Dashboard (`:5173`)**: Offers an interactive celestial-themed chronicle web page displaying metrics, topologies, timeline histories, and editors.
+* **Cosmos UI Dashboard (`:8082`)**: Offers an interactive celestial-themed chronicle web page displaying metrics, topologies, timeline histories, and editors.
 
 ---
 
