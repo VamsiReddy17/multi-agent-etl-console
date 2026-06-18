@@ -1,67 +1,124 @@
-# 🚀 Multi-Agent ETL Console
+# 🚀 Multi-Agent ETL Console (The Cosmos)
 
 [![Multi-Agent CI](https://github.com/VamsiReddy17/multi-agent-etl-console/actions/workflows/ci.yml/badge.svg)](https://github.com/VamsiReddy17/multi-agent-etl-console/actions/workflows/ci.yml)
 [![Python Version](https://img.shields.io/badge/python-3.9%2B-blue.svg)](https://www.python.org/)
 [![Orchestrator](https://img.shields.io/badge/Airflow-2.5.3-orange.svg)](https://airflow.apache.org/)
 [![Streaming](https://img.shields.io/badge/Kafka-7.4.0-black.svg)](https://kafka.apache.org/)
 [![Database](https://img.shields.io/badge/PostgreSQL-14-blue.svg)](https://www.postgresql.org/)
+[![Cloud Target](https://img.shields.io/badge/BigQuery-GCP-green.svg)](https://cloud.google.com/bigquery)
+[![API Layer](https://img.shields.io/badge/FastAPI-0.95-teal.svg)](https://fastapi.tiangolo.com/)
 
-A production-ready, high-throughput **Multi-Agent Data Engineering Pipeline** orchestrated by **Apache Airflow**, powered by **Apache Kafka**, and chronicled through a premium **Cosmos Development Dashboard** — a celestial-themed React UI that tells the story of every session, bug, and fix. 
-
-This system coordinates four specialized agents working sequentially to ingest, transform, validate, and load real-time Kafka event streams into a PostgreSQL Data Warehouse.
+A production-ready, high-throughput **Multi-Agent Data Engineering System** orchestrated by **Apache Airflow**, powered by **Apache Kafka**, controlled via **FastAPI**, and chronicled through a premium **Cosmos Development Dashboard** — a celestial-themed React UI showing live pipeline metrics, topology, error trackers, and quarantined data editors.
 
 ---
 
 ## 🏗️ System Architecture & Data Flow
 
-### 1. Cooperative Agent Topology
-The pipeline leverages cooperative AI agent patterns to divide labor across discrete streaming stages:
+### 1. Hybrid Local-to-Cloud Topology
+The architecture integrates local streaming data components (PostgreSQL, Kafka, Redis, Airflow, and FastAPI) with a Google Cloud BigQuery data warehouse.
 
-![Pipeline Architecture](architecture/architecture_diagram.png)
+```
+                  ┌────────────────────────────────────────────────────────────┐
+                  │                 Local PC (Docker Host)                     │
+                  │                                                            │
+                  │  ┌──────────────┐      ┌─────────────┐      ┌───────────┐  │
+                  │  │  PostgreSQL  │ ◄─── │ Postgres    │ ◄─── │           │  │
+                  │  │   (:5432)    │      │ Load Agent  │      │           │  │
+                  │  └──────────────┘      └─────────────┘      │           │  │
+                  │                                             │           │  │
+                  │  ┌──────────────┐      ┌─────────────┐      │  Quality  │  │
+┌─────────────┐   │  │ Apache Kafka │ ───► │ Ingestion   │ ───► │  Agent    │  │
+│ Order Gen   │ ─►│   (:9092)    │      │ Agent       │      │           │  │
+└─────────────┘   │  └──────┬───────┘      └─────────────┘      │           │  │
+                  │         │                                   │           │  │
+                  │         ▼ (lag check)                       │           │  │
+                  │  ┌──────────────┐      ┌─────────────┐      │           │  │
+                  │  │  Airflow     │      │ BigQuery    │ ◄─── └─────┬─────┘  │
+                  │  │  Scheduler   │      │ Load Agent  │            │ (Clean)
+                  │  └──────────────┘      └──────┬──────┘            │
+                  │                               │                   ▼ (Quarantined)
+                  │  ┌──────────────┐             │             ┌───────────┐
+                  │  │  FastAPI API │             │             │Dead Letter│
+                  │  │   (:8081)    │             │             │Agent (DLQ)│
+                  │  └──────────────┘             │             └─────┬─────┘
+                  │                               │                   │
+                  └───────────────────────────────┼───────────────────┼────────┘
+                                                  │ (HTTPS)           │ (Kafka Topic)
+                                                  ▼                   ▼
+                                    ┌───────────────────────────┬───────────┐
+                                    │      Google Cloud GCP     │ Local Kafka
+                                    │                           │ (dead_letter)
+                                    │ ┌───────────────────────┐ │
+                                    │ │   BigQuery Dataset    │ │
+                                    │ │  (nebula_raw_zone)    │ │
+                                    │ └───────────────────────┘ │
+                                    └───────────────────────────┘
+```
 
-### 2. Event Processing Sequence Loop
-The sequence flowchart below illustrates the exact execution lifecycle and communication protocol between Kafka topic queues, the 4 active agents, and the target database:
+### 2. Stream Processing Sequence (With Sensor & DLQ)
+The sequence flowchart below illustrates the execution lifecycle, active data validation, consumer lag sensing, and dead letter queue routing:
 
 ```mermaid
 sequenceDiagram
     autonumber
+    participant Sensor as Kafka Topic Sensor
     participant Topic as Kafka Queue (Topic: orders)
-    participant Ingest as Kafka Ingestion Agent
+    participant Ingest as Ingestion Agent
     participant Transform as Transform Agent
     participant Quality as Quality Agent
-    participant Load as Postgres Load Agent
-    participant DB as PostgreSQL DW (warehouse.order_events)
+    participant DLQ as Dead Letter Agent (DLQ)
+    participant Load as Postgres / BQ Load Agent
+    participant DB as Database (Target)
 
-    Topic->>Ingest: Poll raw JSON messages (Batch size: 2000)
-    activate Ingest
-    Note over Ingest: Decodes JSON & stamps partition offsets
-    Ingest-->>Transform: Return raw list of dicts
-    deactivate Ingest
+    Note over Sensor: Probes partition lag
+    Sensor->>Topic: Check unconsumed lag offsets
+    alt Lag = 0
+        Sensor-->>Sensor: Pause execution (Poke returns False)
+    else Lag > 0
+        Sensor-->>Topic: Trigger consumption
+        Topic->>Ingest: Poll raw JSON message batches (size: 2000)
+        activate Ingest
+        Ingest-->>Transform: Return raw list of dicts
+        deactivate Ingest
 
-    activate Transform
-    Note over Transform: Coerces types, stamps execution metadata,<br/>and computes order total amount
-    Transform-->>Quality: Return enriched list of dicts
-    deactivate Transform
+        activate Transform
+        Note over Transform: Coerces types, stamps execution metadata,<br/>and computes order total amount
+        Transform-->>Quality: Return enriched list of dicts
+        deactivate Transform
 
-    activate Quality
-    Note over Quality: Asserts schemas, fields ranges, and filters duplicates
-    alt Quarantine rate > 20.0%
-        Quality-->>Quality: Abort pipeline execution (Safety trigger)
-    else Clean records
-        Quality-->>Load: Return valid records list (Quarantines anomalies)
+        activate Quality
+        Note over Quality: Asserts schemas, fields ranges, and filters duplicates
+        alt Quarantine Rate > 20%
+            Quality-->>Quality: Abort pipeline execution (Safety trigger)
+        else Clean & Quarantined records split
+            Quality-->>Load: Return valid records list
+            Quality-->>DLQ: Route quarantined record payloads
+            activate DLQ
+            DLQ->>Topic: Publish to 'dead_letter' topic
+            deactivate DLQ
+            activate Load
+            Load->>DB: Bulk insert valid rows & write execution logs
+            deactivate Load
+        end
+        deactivate Quality
     end
-    deactivate Quality
-
-    activate Load
-    Note over Load: Performs optimized batch executemany inserts
-    Load->>DB: Write events and log execution audits
-    deactivate Load
 ```
 
-### 3. The Cosmos — Development Chronicle Dashboard
-A premium, celestial-themed React.js single-page application presenting the entire development journey across **7 interactive views**: The Nebula (session history timeline), The Asteroid Belt (errors & bug tracker), The Pulsar Log (narrative development log), The Solar Core (pipeline metrics & telemetry), The Constellation (live data flow canvas), The Orion Array (system topology & health), and The Event Horizon (anomaly isolation hub).
+---
 
-![The Cosmos Dashboard](design-ui/mockups/cosmos_dashboard_mockup.png)
+## ⚡ Core Upgraded Features
+
+### 1. Multi-Table PostgreSQL-to-BigQuery Replication
+We extended the synchronization pipeline to replicate all 8 tables in the PostgreSQL `warehouse` schema to the BigQuery `nebula_raw_zone` dataset:
+* **Dimension Tables (Overwrite)**: `customers` and `products` are overwritten via `WRITE_TRUNCATE` during sync to keep catalogs aligned.
+* **Fact Tables (Incremental)**: `orders`, `order_events`, `quarantine_events`, `permanent_failures`, `quality_report`, and `pipeline_execution` are loaded incrementally based on watermark columns (e.g. `received_at`, `created_at`), loading only newer rows.
+* **Direct Streaming Load**: Bypasses GCS bucket write restrictions by converting rows to Newline-Delimited JSON (JSONL) in local staging files (`/tmp/*.json`) and streaming them over HTTPS directly to BigQuery using the python SDK's `load_table_from_file()`.
+
+### 2. FastAPI Control & Orchestration layer
+We introduced a REST API service (`prod_api` container) running on port `8081` to expose pipeline controls:
+* `GET /health`: Returns service health status and timestamp.
+* `POST /pipeline/run`: Instantiates the orchestrator and triggers a single ETL loop run immediately, returning processing metrics.
+* `GET /pipeline/status`: Queries execution metrics dynamically from the active database target (PostgreSQL or BigQuery) based on the environment `LOAD_TARGET` setting.
 
 ---
 
@@ -76,38 +133,8 @@ The pipeline has been benchmarked in high-throughput loops utilizing a continuou
 | **Transform Agent** | Typings & Metas | 2,000 msg/batch | 10ms | 8.2% | ~28 MB |
 | **Quality Agent** | Rule Assertions | 2,000 msg/batch | 6ms | 5.5% | ~32 MB |
 | **Postgres Loader** | Bulk Database Inserts | 1,800 rows/batch | 190ms | 12.4% | ~42 MB |
+| **BigQuery Loader** | Streaming Inserts | 1,500 rows/batch | 320ms | 14.5% | ~48 MB |
 | **Overall Pipeline** | E2E Batch Run | 2,000 msg/batch | ~350ms | — | — |
-
-> [!TIP]
-> Connection pooling and psycopg2 `executemany` allow the Postgres Load Agent to ingest **over 280 rows per second** into the data warehouse, comfortably maintaining a zero lag state.
-
----
-
-## 🔀 Unified Agent Communication Protocol
-
-All agents exchange information using a strictly structured JSON payload contract. Every step parses the outputs of the previous agent:
-
-```json
-{
-  "status": "success | skipped | error",
-  "data": [
-    {
-      "order_id": 401,
-      "customer_id": 3,
-      "product_id": 2,
-      "quantity": 2,
-      "amount": 59.98,
-      "event_type": "order_placed",
-      "received_at": "2026-06-08T05:30:00Z"
-    }
-  ],
-  "rows": 1,
-  "duration_ms": 12.5,
-  "errors": [],
-  "error_message": null,
-  "agent": "KafkaIngestionAgent"
-}
-```
 
 ---
 
@@ -129,36 +156,24 @@ We have built automated scripts (shell & batch formats) to handle the complete b
   ./scripts/stop.sh
   ```
 
-### 🪟 Windows (Batch CMD)
-
-* **To Bootstrap Everything**:
-  ```cmd
-  scripts\start.bat
-  ```
-
-* **To Stop & Clean Up**:
-  ```cmd
-  scripts\stop.bat
-  ```
-
 ---
 
 ## 📁 Repository Structure
 
 ```
 multi-agent-etl-console/
-├── agents/ ...................... Specialized Python Ingestion, Transform, Quality & Load Agents
+├── agents/ ...................... Ingestion, Transform, Quality, DLQ, and Load (PG/BQ) Agents
 ├── airflow/ ..................... Airflow Webserver, Scheduler, Worker and Celery configs & DAGs
-├── architecture/ ................ E2E Architecture diagrams, flow definitions, and layout mockups
-├── design-ui/ ................... UI/UX design system, phase docs, mockups, and industry research
-├── docs/ ........................ Detailed Guides (Kafka setup, Airflow integrations, cloud scale)
-├── monitoring/ .................. Prometheus scrape rules, Grafana dashboards, and Cosmos React Dashboard
+├── api/ ......................... FastAPI REST API server code and endpoints
+├── architecture/ ................ E2E Architecture diagrams, guides, and layouts
+├── bigquery/ .................... SQL schemas and view transformations for BQ target
+├── design-ui/ ................... UI/UX design system, phase docs, and dashboard mockups
+├── docs/ ........................ Detailed Guides (Kafka setup, Airflow, BQ migration guides)
+├── monitoring/ .................. Prometheus scrape rules, Grafana, and Cosmos React Dashboard
 ├── pipelines/ ................... Core streaming orchestrators and pipeline configuration YAMLs
 ├── postgres/ .................... Pre-configured schemas, target tables, and local test mock datasets
-├── scripts/ ..................... Bootstrapping, health-checking, and topic provisioning scripts
-├── sql/ ......................... Data Warehouse counting scripts and schema audit utilities
-├── tests/ ....................... Multi-agent unit tests and E2E integration test suites
-└── wip/ ......................... AI Agent Knowledge Base, completion lists, and session logs
+├── scripts/ ..................... Bootstrapping, backfilling, and topic provisioning scripts
+├── tests/ ....................... Multi-agent unit tests and API integration test suites
 ```
 
 ---
@@ -169,23 +184,10 @@ Once bootstrapped, your local development workspace exposes the following endpoi
 
 | Interface / Service | Local Port | URL | Description |
 |---------------------|------------|-----|-------------|
-| **Cosmos Dashboard** | `5173` | [http://localhost:5173](http://localhost:5173) | Premium cosmic development chronicle UI |
-| **Apache Airflow Web UI** | `8080` | [http://localhost:8080](http://localhost:8080) | DAG scheduling & loop logs (`airflow/airflow`) |
-| **Grafana Analytics** | `3000` | [http://localhost:3000](http://localhost:3000) | Live preloaded metrics charts (`admin/admin`) |
+| **Cosmos Dashboard** | `5173` | [http://localhost:5173](http://localhost:5173) | Premium cosmic development UI |
+| **FastAPI REST API** | `8081` | [http://localhost:8081](http://localhost:8081) | Control API to trigger and monitor pipeline |
+| **Apache Airflow Web UI** | `8080` | [http://localhost:8080](http://localhost:8080) | DAG scheduling & task worker logs |
+| **Grafana Analytics** | `3000` | [http://localhost:3000](http://localhost:3000) | Live preloaded metrics charts |
 | **Prometheus Telemetry** | `9090` | [http://localhost:9090](http://localhost:9090) | Target metrics scraper dashboard |
 | **ETL Metrics Server** | `8000` | [http://localhost:8000/metrics](http://localhost:8000/metrics) | Ingestion and stage counters endpoint |
-| **PostgreSQL DW** | `5432` | `localhost:5432` | Postgres database instance (`postgres/postgres_password`) |
-
----
-
-## 🧠 AI Agent Knowledge Base
-
-If you are developing this project using an AI coding agent, read **[AGENT_KNOWLEDGE.md](wip/AGENT_KNOWLEDGE.md)** before modifying any packages. It contains post-mortem analyses of dependency mismatches (connexion, pendulum, flask-session, sqlalchemy) to prevent builds from failing.
-
----
-
-## 📜 Community & Support
-
-* Read **[COSMOS.md](COSMOS.md)** — the complete development narrative chronicle.
-* Check out our **[CONTRIBUTING.md](CONTRIBUTING.md)** guidelines to start submitting code.
-* Refer to our **[SECURITY.md](SECURITY.md)** to report vulnerabilities.
+| **PostgreSQL DW** | `5432` | `localhost:5432` | Postgres database instance |
