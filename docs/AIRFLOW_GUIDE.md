@@ -1,94 +1,70 @@
-# Airflow Guide
+# Airflow Orchestration Guide
 
-## Accessing the UI
-
-Open http://localhost:8080 — login with `airflow / airflow`
+Apache Airflow is the central orchestration engine of the Multi-Agent ETL stack, scheduling, monitoring, and managing task executions.
 
 ---
 
-## Available DAGs
+## 🏗️ High-Level Airflow Task Architecture
 
-| DAG ID | Schedule | Description |
-|--------|----------|-------------|
-| `streaming_etl` | Every 5 min | Kafka → Transform → Quality → PostgreSQL |
-| `batch_orders_etl` | Daily midnight | Reprocess unprocessed order events |
+Airflow runs in a Celery-Executor topology utilizing Redis as a task queue broker and PostgreSQL as the database metadata store. The system runs two key pipelines:
+
+```
+1. streaming_etl DAG (Runs every 5 minutes)
+┌──────────────────────┐     ┌─────────────────────┐     ┌───────────────────┐     ┌───────────────────┐
+│ wait_for_kafka_data  │ ──► │  ingest_from_kafka  │ ──► │  transform_events │ ──► │ quality_assertion │
+└──────────────────────┘     └─────────────────────┘     └───────────────────┘     └─────────┬─────────┘
+                                                                                             │
+                                                                           ┌─────────────────┴─────────────────┐
+                                                                           │ (Clean)                           │ (Anomaly)
+                                                                           ▼                                   ▼
+                                                                 ┌───────────────────┐               ┌───────────────────┐
+                                                                 │   load_to_store   │               │     route_dlq     │
+                                                                 └───────────────────┘               └───────────────────┘
+
+2. postgres_to_bigquery_sync DAG (Runs hourly)
+┌──────────────────────┐     ┌─────────────────────┐     ┌───────────────────┐     ┌───────────────────┐
+│    sync_customers    │     │    sync_products    │     │    sync_orders    │     │ sync_order_events │
+└──────────────────────┘     └─────────────────────┘     └───────────────────┘     └───────────────────┘
+   (Full Overwrite)             (Full Overwrite)            (Incremental)               (Incremental)
+                                     ... (syncs all 8 tables concurrently)
+```
 
 ---
 
-## Enabling DAGs
+## ⚙️ Active DAGs & Component Roles
 
-DAGs are paused by default. Enable via:
+### 1. `streaming_etl`
+Ingests events from Kafka, runs transformations, asserts quality, and loads clean outputs.
+* **`wait_for_kafka_data` (Custom Sensor)**: Invokes our custom `KafkaTopicSensor` to probe partition lag offsets. If there are no new unconsumed messages, it pauses and defers the run to save compute.
+* **`ingest_from_kafka`**: Calls `KafkaIngestionAgent` to pull batches of up to 2000 messages from the topic.
+* **`transform_events`**: Calls `TransformAgent` to enrich data, parse typings, and calculate totals.
+* **`quality_assertion`**: Calls `QualityAgent` to check values and schema compliance.
+* **`load_to_store`**: Dynamically switches target databases based on `LOAD_TARGET` (loads locally to `warehouse.order_events` or streams to BQ raw zone).
+* **`route_dlq`**: Invokes `DeadLetterAgent` to route quarantined payloads to a segregated Kafka topic.
 
-1. Open http://localhost:8080
-2. Find the DAG in the list
-3. Toggle the **On/Off** switch on the left
+### 2. `postgres_to_bigquery_sync`
+Orchestrates replication of all 8 database tables from local PostgreSQL to the BigQuery cloud dataset `nebula_raw_zone`.
+* **Watermarked Sync**: Probes the BigQuery target to query `MAX(watermark_column)`, then retrieves only newer rows from PostgreSQL to guarantee no duplicate inserts.
+* **Overwrite Sync**: Truncates and updates lookup tables (`customers`, `products`) to ensure catalog matching.
 
-Or via CLI:
+---
+
+## 🛠️ CLI Operations
+
+### Enabling DAGs
+To unpause DAGs via the CLI:
 ```bash
 docker exec prod_airflow_webserver airflow dags unpause streaming_etl
-docker exec prod_airflow_webserver airflow dags unpause batch_orders_etl
+docker exec prod_airflow_webserver airflow dags unpause postgres_to_bigquery_sync
 ```
 
----
-
-## Triggering a DAG Manually
-
+### Triggering a Sync Run Manually
 ```bash
-# Via CLI
-docker exec prod_airflow_webserver airflow dags trigger streaming_etl
-
-# Via UI
-# Click the ▶ (Trigger) button on the DAG row
+docker exec prod_airflow_webserver airflow dags trigger postgres_to_bigquery_sync
 ```
 
----
-
-## Viewing Logs
-
-```bash
-# Scheduler logs
-docker-compose logs -f airflow_scheduler
-
-# Worker logs
-docker-compose logs -f airflow_worker
-```
-
----
-
-## Adding the PostgreSQL Connection
-
-For the `batch_orders_etl` DAG, add a connection in Airflow:
-
-1. Go to **Admin → Connections**
-2. Click **+** (Add connection)
-3. Fill in:
-   - **Conn ID**: `postgres_default`
-   - **Conn Type**: `Postgres`
-   - **Host**: `postgres`
-   - **Schema**: `dataware`
-   - **Login**: `postgres`
-   - **Password**: `postgres_password`
-   - **Port**: `5432`
-
-Or via CLI:
-```bash
-docker exec prod_airflow_webserver airflow connections add postgres_default \
-  --conn-type postgres \
-  --conn-host postgres \
-  --conn-schema dataware \
-  --conn-login postgres \
-  --conn-password postgres_password \
-  --conn-port 5432
-```
-
----
-
-## Monitoring Pipeline Executions
-
-```sql
--- Connect to PostgreSQL and check logs
-SELECT pipeline_name, start_time, end_time, status, rows_processed
-FROM warehouse.pipeline_execution
-ORDER BY created_at DESC
-LIMIT 20;
-```
+### Checking Task Failures or Logs
+If a run fails:
+1. Open the Airflow Web UI at http://localhost:8080.
+2. Click on the DAG (e.g. `postgres_to_bigquery_sync`) and select **Grid** or **Graph** view.
+3. Click the failed task box, and select the **Logs** tab to troubleshoot.
