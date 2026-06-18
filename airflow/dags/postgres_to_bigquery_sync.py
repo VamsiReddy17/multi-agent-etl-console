@@ -37,7 +37,7 @@ def sync_postgres_to_bigquery(**context) -> None:
     gcp_project = os.getenv("GCP_PROJECT_ID", "dataengineering-481815")
     bq_client = bigquery.Client(project=gcp_project)
     
-    dataset_id = "raw"
+    dataset_id = "nebula_raw_zone"
     table_id = "order_events"
     
     watermark = "1970-01-01 00:00:00"

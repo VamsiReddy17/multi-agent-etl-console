@@ -52,7 +52,7 @@ def backfill():
         sys.exit(1)
         
     gcs_bucket_name = os.getenv("GCS_BUCKET_NAME", "my-etl-landing-bucket")
-    bq_dataset = "raw"
+    bq_dataset = "nebula_raw_zone"
     bq_table = "order_events"
     
     # Postgres configurations

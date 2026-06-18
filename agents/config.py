@@ -58,7 +58,7 @@ class KafkaConfig:
 @dataclass
 class BigQueryConfig:
     project_id: str = field(default_factory=lambda: os.getenv("GCP_PROJECT_ID"))
-    dataset: str = field(default_factory=lambda: os.getenv("BQ_DATASET", "warehouse"))
+    dataset: str = field(default_factory=lambda: os.getenv("BQ_DATASET", "solar_core_analytics"))
     credentials_path: str = field(default_factory=lambda: os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
 
 

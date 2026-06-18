@@ -1,5 +1,5 @@
--- BigQuery raw.order_events Schema Definition
-CREATE TABLE IF NOT EXISTS `raw.order_events` (
+-- BigQuery nebula_raw_zone.order_events Schema Definition
+CREATE TABLE IF NOT EXISTS `nebula_raw_zone.order_events` (
     event_id INT64,
     order_id INT64,
     customer_id INT64,

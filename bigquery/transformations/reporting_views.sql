@@ -1,5 +1,5 @@
 -- BigQuery Reporting View transformations
-CREATE OR REPLACE VIEW `warehouse.orders_reporting` AS (
+CREATE OR REPLACE VIEW `solar_core_analytics.orders_reporting` AS (
     SELECT 
         order_id,
         customer_id,
@@ -9,6 +9,6 @@ CREATE OR REPLACE VIEW `warehouse.orders_reporting` AS (
         event_timestamp,
         received_at
     FROM 
-        `raw.order_events`
+        `nebula_raw_zone.order_events`
 );
 
